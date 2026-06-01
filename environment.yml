@@ -1,0 +1,11 @@
+name: synteny_plot
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8
+  - minimap2
+  - pip
+  - pip:
+    - -e .

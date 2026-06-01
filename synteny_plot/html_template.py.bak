@@ -1,0 +1,622 @@
+# -*- coding: utf-8 -*-
+"""HTML/CSS/JavaScript template for the interactive SVG plot."""
+
+HTML_TEMPLATE = r"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>__TITLE__</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #ffffff;
+    color: #111827;
+  }
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.96);
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.035);
+  }
+  .toolbar label {
+    font-size: 13px;
+    color: #374151;
+  }
+  .toolbar input, .toolbar select {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 13px;
+    background: white;
+  }
+  .toolbar button {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 12px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .toolbar button:hover {
+    background: #eef2ff;
+  }
+  .toolbar .sep {
+    width: 1px;
+    height: 24px;
+    background: #e5e7eb;
+    margin: 0 4px;
+  }
+  #canvasWrap {
+    width: 100vw;
+    height: calc(100vh - 56px);
+    overflow: auto;
+    background: white;
+  }
+  #plotSvg {
+    display: block;
+    background: white;
+  }
+  .chr {
+    fill: #1a2847;
+    rx: 2;
+    ry: 2;
+  }
+  .chr.odd {
+    fill: #152732;
+  }
+  .link {
+    stroke-width: 0.25;
+    pointer-events: all;
+  }
+  .link.forward {
+    fill: rgba(82, 145, 201, 0.50);
+    stroke: rgba(82, 145, 201, 0.62);
+  }
+  .link.reverse {
+    fill: rgba(214, 120, 95, 0.54);
+    stroke: rgba(214, 120, 95, 0.66);
+  }
+  .chrLabel {
+    font-size: 12px;
+    fill: #111827;
+    text-anchor: middle;
+  }
+  .rowLabel {
+    font-size: 16px;
+    font-weight: 700;
+    fill: #111827;
+  }
+  .titleText {
+    font-size: 23px;
+    font-weight: 700;
+    fill: #111827;
+    text-anchor: middle;
+  }
+  .subTitle {
+    font-size: 12px;
+    fill: #4b5563;
+    text-anchor: middle;
+  }
+  #tooltip {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    display: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(17, 24, 39, 0.92);
+    color: white;
+    font-size: 12px;
+    line-height: 1.35;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+    max-width: 520px;
+  }
+
+  @page {
+    size: landscape;
+    margin: 8mm;
+  }
+  @media print {
+    body {
+      background: white;
+    }
+    .toolbar, #tooltip {
+      display: none !important;
+    }
+    #canvasWrap {
+      overflow: visible !important;
+      width: auto !important;
+      height: auto !important;
+    }
+    #plotSvg {
+      width: 100% !important;
+      height: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <label>Turn genome</label>
+  <select id="turnRow">__ROW_OPTIONS__</select>
+  <label>Chromosome</label>
+  <input id="turnChr" list="chrList" placeholder="HiC_scaffold_1 / chr1" size="34"/>
+  <datalist id="chrList">__DATALIST__</datalist>
+  <button onclick="turnChromosome()">Turn</button>
+  <button onclick="resetTurn()">Reset turn</button>
+
+  <span class="sep"></span>
+
+  <label>View genome</label>
+  <select id="focusRow">
+    <option value="auto">auto</option>
+    __ROW_OPTIONS__
+  </select>
+  <label>Focus chromosome(s)</label>
+  <input id="focusChr" list="chrList" placeholder="输入1条或多条染色体，逗号分隔" size="40"/>
+  <button onclick="focusChromosome()">View chr(s)</button>
+  <button onclick="resetFocus()">Reset view</button>
+
+  <span class="sep"></span>
+
+  <button onclick="exportPdf()">Export PDF</button>
+</div>
+
+<div id="canvasWrap">
+  <svg id="plotSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+<div id="tooltip"></div>
+
+<script>
+const GENOMES = __GENOMES__;
+const BLOCKS = __BLOCKS__;
+const INIT_TURNS = __INIT_TURNS__;
+const CONFIG = __CONFIG__;
+
+let turned = INIT_TURNS.map(x => new Set(x));
+let focus = null;  // null or {row: number, chrs: ["chr1", ...]}
+
+const svg = document.getElementById("plotSvg");
+const tooltip = document.getElementById("tooltip");
+
+function fmtBp(x) {
+  x = Number(x);
+  if (x >= 1e9) return (x / 1e9).toFixed(2) + " Gb";
+  if (x >= 1e6) return (x / 1e6).toFixed(2) + " Mb";
+  if (x >= 1e3) return (x / 1e3).toFixed(2) + " kb";
+  return Math.round(x) + " bp";
+}
+
+function fmtInt(x) {
+  return Math.round(Number(x)).toLocaleString("en-US");
+}
+
+function invertStrand(s) {
+  return s === "+" ? "-" : "+";
+}
+
+function clearSvg() {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+}
+
+function makeSvgEl(tag, attrs) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "text") el.textContent = v;
+    else el.setAttribute(k, v);
+  }
+  return el;
+}
+
+function showTip(html, event) {
+  tooltip.innerHTML = html;
+  tooltip.style.display = "block";
+  tooltip.style.left = (event.clientX + 12) + "px";
+  tooltip.style.top = (event.clientY + 12) + "px";
+}
+
+function hideTip() {
+  tooltip.style.display = "none";
+}
+
+function buildLayout(records, turnedSet, x0, width) {
+  if (!records || records.length === 0) return {};
+  const totalLen = records.reduce((s, r) => s + r.length, 0);
+  const gap = totalLen * CONFIG.gapRatio;
+  const total = totalLen + gap * Math.max(0, records.length - 1);
+
+  let cursor = 0;
+  const layout = {};
+
+  for (const r of records) {
+    const a = x0 + (cursor / total) * width;
+    const b = x0 + ((cursor + r.length) / total) * width;
+
+    layout[r.seq_id] = {
+      x0: a,
+      x1: b,
+      len: r.length,
+      reversed: turnedSet.has(r.seq_id)
+    };
+
+    cursor += r.length + gap;
+  }
+
+  return layout;
+}
+
+function mapX(layout, chr, bp) {
+  const item = layout[chr];
+  if (!item) return null;
+
+  bp = Math.max(0, Math.min(bp, item.len));
+  let frac = item.len > 0 ? bp / item.len : 0;
+  if (item.reversed) frac = 1 - frac;
+
+  return item.x0 + frac * (item.x1 - item.x0);
+}
+
+function linkPath(x1, y1, x2, y2, reverse) {
+  const midY = (y1 + y2) / 2;
+  const bend = CONFIG.curvature * (reverse ? -1 : 1);
+  const c1x = x1;
+  const c1y = midY + bend;
+  const c2x = x2;
+  const c2y = midY - bend;
+  return `M ${x1.toFixed(2)} ${y1.toFixed(2)} C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+}
+
+function ribbonPath(u1, u2, y1, l1, l2, y2, reverse) {
+  const midY = (y1 + y2) / 2;
+  const bend = CONFIG.curvature * (reverse ? -1 : 1);
+  const topC1y = midY + bend;
+  const topC2y = midY - bend;
+  const botC1y = midY - bend;
+  const botC2y = midY + bend;
+  return (
+    `M ${u1.toFixed(2)} ${y1.toFixed(2)} ` +
+    `C ${u1.toFixed(2)} ${topC1y.toFixed(2)}, ${l1.toFixed(2)} ${topC2y.toFixed(2)}, ${l1.toFixed(2)} ${y2.toFixed(2)} ` +
+    `L ${l2.toFixed(2)} ${y2.toFixed(2)} ` +
+    `C ${l2.toFixed(2)} ${botC1y.toFixed(2)}, ${u2.toFixed(2)} ${botC2y.toFixed(2)}, ${u2.toFixed(2)} ${y1.toFixed(2)} Z`
+  );
+}
+
+function strokeWidth(alnLen) {
+  const v = 0.55 + Math.log10(Math.max(alnLen, 1000) / 1000) * 0.42;
+  return Math.max(CONFIG.minLineWidth, Math.min(CONFIG.maxLineWidth, v));
+}
+
+function drawText(x, y, text, className, anchor="middle") {
+  const t = makeSvgEl("text", {x, y, class: className, "text-anchor": anchor});
+  const parts = String(text).split("\n");
+  parts.forEach((p, i) => {
+    const span = makeSvgEl("tspan", {
+      x,
+      dy: i === 0 ? 0 : 15,
+      text: p
+    });
+    t.appendChild(span);
+  });
+  svg.appendChild(t);
+}
+
+function drawChromosomes(records, layout, y, rowIndex) {
+  const barH = CONFIG.barHeight;
+  for (const r of records) {
+    const item = layout[r.seq_id];
+
+    const rect = makeSvgEl("rect", {
+      x: item.x0,
+      y: y - barH / 2,
+      width: Math.max(1, item.x1 - item.x0),
+      height: barH,
+      class: rowIndex % 2 === 1 ? "chr odd" : "chr"
+    });
+
+    rect.addEventListener("mousemove", (event) => {
+      const pt = svg.createSVGPoint();
+      pt.x = event.clientX;
+      pt.y = event.clientY;
+      const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+      let frac = (loc.x - item.x0) / Math.max(1, item.x1 - item.x0);
+      frac = Math.max(0, Math.min(1, frac));
+      const bp = item.reversed ? Math.round((1 - frac) * r.length) : Math.round(frac * r.length);
+      showTip(`genome: ${GENOMES[rowIndex].label}<br>chr: ${r.seq_id}<br>pos: ${fmtInt(bp)} bp`, event);
+    });
+    rect.addEventListener("mouseleave", hideTip);
+
+    svg.appendChild(rect);
+
+    const flip = item.reversed ? " ↢" : "";
+    const labelY = y - 38;
+    drawText((item.x0 + item.x1) / 2, labelY, `${r.seq_id}${flip}\n${fmtBp(r.length)}`, "chrLabel");
+  }
+}
+
+function drawLinks(layouts, blocks) {
+  const sorted = blocks.slice().sort((a, b) => b.alnLen - a.alnLen);
+
+  for (const b of sorted) {
+    const upperRow = b.pair;
+    const lowerRow = b.pair + 1;
+
+    const upperLayout = layouts[upperRow];
+    const lowerLayout = layouts[lowerRow];
+
+    if (!upperLayout || !lowerLayout) continue;
+    if (!(b.upper in upperLayout) || !(b.lower in lowerLayout)) continue;
+
+    const upperRev = upperLayout[b.upper].reversed;
+    const lowerRev = lowerLayout[b.lower].reversed;
+
+    let visual = b.strand;
+    if ((upperRev && !lowerRev) || (!upperRev && lowerRev)) visual = invertStrand(visual);
+
+    const ux1 = mapX(upperLayout, b.upper, b.upperStart);
+    const ux2 = mapX(upperLayout, b.upper, b.upperEnd);
+    const lx1 = mapX(lowerLayout, b.lower, b.lowerStart);
+    const lx2 = mapX(lowerLayout, b.lower, b.lowerEnd);
+
+    if (ux1 === null || ux2 === null || lx1 === null || lx2 === null) continue;
+
+    const y1 = CONFIG.rowYs[upperRow] + CONFIG.barHeight / 2;
+    const y2 = CONFIG.rowYs[lowerRow] - CONFIG.barHeight / 2;
+    const lowerA = visual === "-" ? lx2 : lx1;
+    const lowerB = visual === "-" ? lx1 : lx2;
+
+    const path = makeSvgEl("path", {
+      d: ribbonPath(ux1, ux2, y1, lowerA, lowerB, y2, visual === "-"),
+      class: visual === "+" ? "link forward" : "link reverse",
+      "stroke-width": Math.min(0.6, strokeWidth(b.alnLen) * 0.18),
+      "opacity": CONFIG.linkOpacity
+    });
+
+    path.addEventListener("mousemove", (event) => {
+      showTip(
+        `pair: ${GENOMES[upperRow].label} → ${GENOMES[lowerRow].label}<br>` +
+        `upper: ${b.upper}:${fmtInt(b.upperStart)}-${fmtInt(b.upperEnd)}<br>` +
+        `lower: ${b.lower}:${fmtInt(b.lowerStart)}-${fmtInt(b.lowerEnd)}<br>` +
+        `strand: ${b.strand} → displayed ${visual}<br>` +
+        `length: ${fmtInt(b.alnLen)} bp<br>` +
+        `identity: ${Number(b.identity).toFixed(4)}<br>` +
+        `MAPQ: ${b.mapq}`,
+        event
+      );
+    });
+    path.addEventListener("mouseleave", hideTip);
+
+    svg.appendChild(path);
+  }
+}
+
+function parseChrList(text) {
+  return String(text || "")
+    .split(/[\s,;，；]+/)
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+
+function uniqueKeepOrder(arr) {
+  const seen = new Set();
+  const out = [];
+  for (const x of arr) {
+    if (!seen.has(x)) {
+      seen.add(x);
+      out.push(x);
+    }
+  }
+  return out;
+}
+
+function orderRecordsByNames(records, names) {
+  const recMap = new Map(records.map(r => [r.seq_id, r]));
+  const out = [];
+  for (const n of names) {
+    if (recMap.has(n)) out.push(recMap.get(n));
+  }
+  return out;
+}
+
+function hasRecord(row, chr) {
+  return GENOMES[row].records.some(r => r.seq_id === chr);
+}
+
+function resolveFocusRow(requested, chrList) {
+  if (requested !== "auto") return Number(requested);
+
+  let foundRow = null;
+  const ambiguous = [];
+  const missing = [];
+
+  for (const chr of chrList) {
+    const rows = [];
+    for (let i = 0; i < GENOMES.length; i++) {
+      if (hasRecord(i, chr)) rows.push(i);
+    }
+    if (rows.length === 0) missing.push(chr);
+    else if (rows.length > 1) ambiguous.push(chr);
+    else if (foundRow === null) foundRow = rows[0];
+    else if (foundRow !== rows[0]) ambiguous.push(chr);
+  }
+
+  if (missing.length > 0) {
+    alert("找不到这些染色体：\n" + missing.join(", "));
+    return null;
+  }
+  if (ambiguous.length > 0) {
+    alert("自动判断失败。以下染色体同时存在于多个基因组，或输入混合了不同基因组。请手动指定 View genome。\n" + ambiguous.join(", "));
+    return null;
+  }
+
+  return foundRow;
+}
+
+function getCurrentData() {
+  if (!focus) {
+    return {
+      genomes: GENOMES.map(g => ({label: g.label, records: g.records})),
+      blocks: BLOCKS,
+      note: ""
+    };
+  }
+
+  const n = GENOMES.length;
+  const active = [];
+  for (let i = 0; i < n; i++) active.push(new Set());
+
+  for (const chr of focus.chrs) active[focus.row].add(chr);
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const b of BLOCKS) {
+      const u = b.pair;
+      const l = b.pair + 1;
+
+      if (active[u].has(b.upper) && !active[l].has(b.lower)) {
+        active[l].add(b.lower);
+        changed = true;
+      }
+      if (active[l].has(b.lower) && !active[u].has(b.upper)) {
+        active[u].add(b.upper);
+        changed = true;
+      }
+    }
+  }
+
+  const genomes = [];
+  for (let i = 0; i < n; i++) {
+    const names = Array.from(active[i]);
+    genomes.push({
+      label: GENOMES[i].label,
+      records: orderRecordsByNames(GENOMES[i].records, names)
+    });
+  }
+
+  const blocks = BLOCKS.filter(b => active[b.pair].has(b.upper) && active[b.pair + 1].has(b.lower));
+
+  return {
+    genomes,
+    blocks,
+    note: `Focused: ${GENOMES[focus.row].label} [${focus.chrs.join(", ")}] → ${blocks.length} block(s)`
+  };
+}
+
+function draw() {
+  clearSvg();
+
+  svg.setAttribute("width", CONFIG.width);
+  svg.setAttribute("height", CONFIG.height);
+  svg.setAttribute("viewBox", `0 0 ${CONFIG.width} ${CONFIG.height}`);
+
+  const current = getCurrentData();
+
+  drawText(CONFIG.width / 2, 34, CONFIG.title, "titleText");
+  if (current.note) {
+    drawText(CONFIG.width / 2, 58, current.note, "subTitle");
+  }
+
+  const plotWidth = CONFIG.width - CONFIG.marginLeft - CONFIG.marginRight;
+  const layouts = [];
+
+  for (let i = 0; i < current.genomes.length; i++) {
+    const y = CONFIG.rowYs[i];
+    drawText(CONFIG.marginLeft - 18, y + 5, current.genomes[i].label, "rowLabel", "end");
+    const layout = buildLayout(current.genomes[i].records, turned[i], CONFIG.marginLeft, plotWidth);
+    layouts.push(layout);
+  }
+
+  drawLinks(layouts, current.blocks);
+
+  for (let i = 0; i < current.genomes.length; i++) {
+    drawChromosomes(current.genomes[i].records, layouts[i], CONFIG.rowYs[i], i);
+  }
+
+  if (current.blocks.length === 0) {
+    drawText(CONFIG.width / 2, CONFIG.height / 2, "No synteny blocks under current filters/view", "subTitle");
+  }
+}
+
+function turnChromosome() {
+  const row = Number(document.getElementById("turnRow").value);
+  const chr = document.getElementById("turnChr").value.trim();
+
+  if (!chr) {
+    alert("请输入要翻转的染色体名称");
+    return;
+  }
+  if (!hasRecord(row, chr)) {
+    alert(`在 ${GENOMES[row].label} 中找不到：${chr}`);
+    return;
+  }
+
+  if (turned[row].has(chr)) turned[row].delete(chr);
+  else turned[row].add(chr);
+
+  draw();
+}
+
+function resetTurn() {
+  turned = INIT_TURNS.map(x => new Set(x));
+  draw();
+}
+
+function focusChromosome() {
+  const requested = document.getElementById("focusRow").value;
+  const raw = document.getElementById("focusChr").value.trim();
+
+  if (!raw) {
+    alert("请输入要单独查看的1条或多条染色体名称，可用逗号分隔");
+    return;
+  }
+
+  const chrList = uniqueKeepOrder(parseChrList(raw));
+  const row = resolveFocusRow(requested, chrList);
+  if (row === null || row === undefined || Number.isNaN(row)) return;
+
+  const missing = chrList.filter(chr => !hasRecord(row, chr));
+  if (missing.length > 0) {
+    alert(`在 ${GENOMES[row].label} 中找不到：\n` + missing.join(", "));
+    return;
+  }
+
+  focus = {row, chrs: chrList};
+  document.getElementById("focusRow").value = String(row);
+  document.getElementById("focusChr").value = chrList.join(", ");
+  draw();
+}
+
+function resetFocus() {
+  focus = null;
+  document.getElementById("focusChr").value = "";
+  document.getElementById("focusRow").value = "auto";
+  draw();
+}
+
+function exportPdf() {
+  hideTip();
+  // Browser will open the print dialog. Choose "Save as PDF".
+  window.print();
+}
+
+document.getElementById("turnChr").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") turnChromosome();
+});
+
+document.getElementById("focusChr").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") focusChromosome();
+});
+
+draw();
+</script>
+</body>
+</html>
+"""
