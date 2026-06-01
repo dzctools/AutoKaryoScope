@@ -41,6 +41,14 @@ The automatic alignment mode requires `minimap2`. If you already provide PAF fil
 
 For `N` genomes, provide `N - 1` PAF files. Adjacent rows are connected in the same order as the genome list.
 
+> **Tip:** For multi-genome analysis, it is recommended to run minimap2 in parallel beforehand to generate PAF files, which can significantly speed up the process:
+>
+> ```bash
+> minimap2 -x <preset> --secondary=no --cs -c --eqx -t <threads> target.fa query.fa > output.paf
+> ```
+>
+> You can also let this tool handle minimap2 automatically by omitting `--pafs`.
+
 ```bash
 python draw_picture_html_auto_v6.py \
   --genomes genome1.fa genome2.fa genome3.fa \
