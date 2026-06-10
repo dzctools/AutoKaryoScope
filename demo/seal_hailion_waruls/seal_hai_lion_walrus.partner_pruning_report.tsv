@@ -1,0 +1,191 @@
+adjacent_pair	preset	pair_label	pair	upperGenome	lowerGenome	upper	lower	block_count	aln_sum	upper_block_rank	lower_block_rank	max_partners_per_chr	partner_cap_mode	status	reason
+0	asm5	seal_vs_walrus	0	seal	walrus	chr1	HiC_scaffold_3	2676	40158734	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr2	HiC_scaffold_1	1672	25211257	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr2	HiC_scaffold_6	338	4723258	2	2	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr3	HiC_scaffold_2	2133	30761730	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr4	HiC_scaffold_4	2266	33373419	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr5	HiC_scaffold_5	2206	32863691	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr6	HiC_scaffold_7	1579	23190959	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr6	HiC_scaffold_12	215	3013339	2	2	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr6	HiC_scaffold_18	1	11218	3	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr7	HiC_scaffold_1	716	10304260	1	2	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr7	HiC_scaffold_12	689	10146990	2	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr8	HiC_scaffold_8	1453	21137944	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr8	HiC_scaffold_11	7	101768	2	3	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr9	HiC_scaffold_9	1676	24412625	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr9	HiC_scaffold_11	8	128014	2	2	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr10	HiC_scaffold_10	1421	21200515	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr11_X	HiC_scaffold_11	1858	30365945	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr12	HiC_scaffold_14	998	14239956	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr13	HiC_scaffold_13	1076	15779831	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr13	HiC_scaffold_17	1	10768	2	2	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr14	HiC_scaffold_15	817	12085420	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_6	816	11628367	1	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_17	49	692123	2	1	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_7	4	52544	3	2	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_8	4	47749	4	2	4	both	kept	
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_2	3	33101	5	2	4	both	dropped	upper_partner_rank>4
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_5	2	21237	6	2	4	both	dropped	upper_partner_rank>4
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_9	1	13217	7	2	4	both	dropped	upper_partner_rank>4
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_3	1	13215	8	2	4	both	dropped	upper_partner_rank>4
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_13	1	12239	9	2	4	both	dropped	upper_partner_rank>4
+0	asm5	seal_vs_walrus	0	seal	walrus	chr15	HiC_scaffold_14	1	10215	10	2	4	both	dropped	upper_partner_rank>4
+0	asm5	seal_vs_walrus	0	seal	walrus	chr16	HiC_scaffold_16	425	6237393	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr5	7076	136640940	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr13	4527	75112504	2	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr10	27	107814	3	7	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr8	23	117723	4	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr6	10	54871	5	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr16	9	22042	6	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr7	4	9196	7	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr2	2	16292	8	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr1	1	4270	9	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_1	chr17	1	3861	10	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr2	10057	184343065	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr16	210	690468	2	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr10	41	163842	3	5	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr13	9	44707	4	4	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr8	8	40990	5	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr6	6	29406	6	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr14	2	6066	7	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr7	2	5022	8	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr5	1	3315	9	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_2	chr9	1	3304	10	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr1	9632	196136844	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr5	97	900160	2	4	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr10	21	55363	3	8	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr4	3	21126	4	6	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr7	2	5590	5	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr16	2	5366	6	12	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr12	1	3876	7	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr8	1	3624	8	13	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr13	1	2664	9	12	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr14	1	2400	10	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_3	chr17	1	2017	11	10	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr3	9103	177619543	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr10	37	409372	2	6	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr8	5	14631	3	8	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr6	5	13967	4	5	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr9	4	9870	5	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr7	3	9061	6	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr1	2	16615	7	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr16	2	11737	8	11	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr17	2	5035	9	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr13	2	4938	10	11	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr4	2	4504	11	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_4	chr12	1	2716	12	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_5	chr4	8746	172430491	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_5	chr12	13	32055	2	3	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_5	chr10	4	12443	3	13	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_5	chr16	3	9019	4	9	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_5	chr11	1	2780	5	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_5	chr6	1	2532	6	12	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr14	4891	81388801	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr17	4061	54351758	2	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr10	193	503943	3	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr5	65	293099	4	5	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr7	47	132055	5	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr16	35	95242	6	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr8	23	81161	7	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr4	21	99044	8	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr3	18	80923	9	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr1	17	109237	10	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr11	12	63081	11	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr9	9	36998	12	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr12	7	33625	13	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr13	6	29921	14	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr15	5	34123	15	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr2	4	13175	16	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_6	chr6	2	6082	17	9	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_7	chr6	7012	126532483	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_7	chr13	31	92934	2	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_7	chr8	20	103006	3	4	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_7	chr10	18	92567	4	9	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_7	chr2	4	19582	5	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_7	chr3	2	9884	6	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_7	chr16	2	3930	7	14	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr8	7007	127780341	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr10	50	164081	2	4	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr6	21	81965	3	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr13	17	55914	4	3	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr4	6	22800	5	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr14	6	17817	6	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr5	4	12437	7	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr16	4	11687	8	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr11	3	9639	9	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr17	2	4961	10	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr2	1	7811	11	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_8	chr3	1	7324	12	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr7	6976	133005107	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr10	9	28408	2	10	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr4	4	12071	3	5	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chrX	3	15462	4	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr6	3	15257	5	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr8	3	12721	6	10	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr14	2	10929	7	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr12	2	8967	8	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr3	2	8192	9	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr11	2	6366	10	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr13	2	5034	11	10	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr9	1	2388	12	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr16	1	2253	13	15	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr17	1	2237	14	9	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_9	chr1	1	1990	15	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr9	6696	121469226	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr4	220	2162553	2	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr16	134	321769	3	3	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr10	5	14729	4	12	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr13	4	11708	5	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr17	3	11651	6	2	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr3	2	7322	7	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr8	2	6291	8	12	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr6	2	4807	9	10	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr11	1	2341	10	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_10	chr7	1	2075	11	10	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_11	chrX	5225	112452424	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_11	chr16	61	127978	2	4	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_11	chr8	3	10349	3	11	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_11	chr10	3	10085	4	14	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_11	chr1	2	6468	5	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_11	chr6	1	3095	6	11	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_12	chr10	5795	97690948	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_12	chr13	8	24824	2	5	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_12	chr8	4	11103	3	9	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_12	chr6	3	9274	4	8	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_12	chr17	1	2437	5	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_12	chr9	1	2418	6	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr12	5497	94083068	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr5	551	3713738	2	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr10	51	118049	3	3	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr8	12	42396	4	5	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr3	11	50932	5	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr7	6	25625	6	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr6	4	10793	7	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr16	3	8774	8	10	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr17	2	6500	9	3	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr2	2	4799	10	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr9	1	8602	11	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr1	1	6453	12	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr11	1	4451	13	6	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_13	chr13	1	1982	14	13	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_14	chr11	5647	96527238	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_14	chr12	5	33138	2	5	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_14	chr16	2	5311	3	13	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_14	chr17	1	2561	4	7	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_14	chr5	1	2278	5	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_14	chr7	1	2201	6	9	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr15	4974	80968342	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr5	223	1396401	2	3	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr12	44	145508	3	2	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr10	6	20341	4	11	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr8	5	16280	5	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr13	3	10460	6	9	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr7	3	9264	7	5	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr11	2	6900	8	4	4	both	dropped	upper_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr1	1	2702	9	7	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_15	chr3	1	2141	10	8	4	both	dropped	upper_partner_rank>4;lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_16	chr16	3665	51097955	1	1	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_16	chr13	5	12030	2	7	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_16	chr10	3	7536	3	15	4	both	dropped	lower_partner_rank>4
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_16	chr15	1	3168	4	3	4	both	kept	
+1	asm5	walrus_vs_hai_lion	1	walrus	hai_lion	HiC_scaffold_17	chr16	12	23436	1	6	4	both	dropped	lower_partner_rank>4

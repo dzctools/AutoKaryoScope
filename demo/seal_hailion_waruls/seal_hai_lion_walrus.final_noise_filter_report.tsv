@@ -1,0 +1,42 @@
+pair	upperGenome	lowerGenome	upper	lower	block_count	aln_sum	current_block_count	rescued_blocks	blocks_after_rescue	upper_fill_rate	lower_fill_rate	max_fill_rate	min_fill_rate	min_dominant_blocks	dominant_partner	block_protected	fill_protected	upper_block_rank	lower_block_rank	upper_partner_count	lower_partner_count	upper_max_block_count	lower_max_block_count	upper_block_ratio	lower_block_ratio	min_pair_blocks	keep_top_partners	min_block_ratio	non_continuous	continuity_gap_bp	borderline_ratio	min_block	min_pair_aln	min_identity	min_mapq	median_aln	max_aln	min_obs_identity	min_obs_mapq	status	reason
+0	seal	walrus	chr1	HiC_scaffold_3	1121	21820118									1														0	5000000	1.250000	10098	8781	0.626820	48	17640	58915	0.647830	60	kept	dominant_init_pair
+0	seal	walrus	chr2	HiC_scaffold_1	705	13758144									1														0	5000000	1.250000	10098	8781	0.626820	48	17617	46752	0.629690	60	kept	dominant_init_pair
+0	seal	walrus	chr2	HiC_scaffold_6	114	2113695									0														0	5000000	1.250000	10098	8781	0.626820	48	17458	41051	0.636740	60	kept	
+0	seal	walrus	chr3	HiC_scaffold_2	816	15226029									1														0	5000000	1.250000	10098	8781	0.626820	48	16946	73023	0.630250	60	kept	dominant_init_pair
+0	seal	walrus	chr4	HiC_scaffold_4	882	17079420									1														0	5000000	1.250000	10098	8781	0.626820	48	17366	80218	0.638960	60	kept	dominant_init_pair
+0	seal	walrus	chr5	HiC_scaffold_5	920	17720096									1														0	5000000	1.250000	10098	8781	0.626820	48	17367	46975	0.639740	60	kept	dominant_init_pair
+0	seal	walrus	chr6	HiC_scaffold_7	608	11743583									1														0	5000000	1.250000	10098	8781	0.626820	48	17611	77922	0.656800	60	kept	dominant_init_pair
+0	seal	walrus	chr6	HiC_scaffold_12	75	1383076									0														0	5000000	1.250000	10098	8781	0.626820	48	16863	40852	0.739320	60	kept	
+0	seal	walrus	chr7	HiC_scaffold_1	260	4922396									1														0	5000000	1.250000	10098	8781	0.626820	48	17092	47585	0.626820	60	kept	dominant_init_pair
+0	seal	walrus	chr7	HiC_scaffold_12	272	5237187									1														0	5000000	1.250000	10098	8781	0.626820	48	17288	54831	0.644470	60	kept	dominant_init_pair
+0	seal	walrus	chr8	HiC_scaffold_8	564	10701783									1														0	5000000	1.250000	10098	8781	0.626820	48	17192	74389	0.650180	60	kept	dominant_init_pair
+0	seal	walrus	chr8	HiC_scaffold_11	3	52471									0														0	5000000	1.250000	10098	8781	0.626820	48	17427	20805	0.923580	60	kept	
+0	seal	walrus	chr9	HiC_scaffold_9	647	12297927									1														0	5000000	1.250000	10098	8781	0.626820	48	17344	55445	0.636480	60	kept	dominant_init_pair
+0	seal	walrus	chr9	HiC_scaffold_11	5	92360									0														0	5000000	1.250000	10098	8781	0.626820	48	16657	26885	0.925990	60	kept	
+0	seal	walrus	chr10	HiC_scaffold_10	572	11163788									1														0	5000000	1.250000	10098	8781	0.626820	48	17691	70943	0.629180	60	kept	dominant_init_pair
+0	seal	walrus	chr11_X	HiC_scaffold_11	873	18651790									1														0	5000000	1.250000	10098	8781	0.626820	48	18791	67059	0.632990	60	kept	dominant_init_pair
+0	seal	walrus	chr12	HiC_scaffold_14	353	6709952									1														0	5000000	1.250000	10098	8781	0.626820	48	17282	51053	0.630310	60	kept	dominant_init_pair
+0	seal	walrus	chr13	HiC_scaffold_13	405	7840099									1														0	5000000	1.250000	10098	8781	0.626820	48	17307	67330	0.652560	60	kept	dominant_init_pair
+0	seal	walrus	chr14	HiC_scaffold_15	319	6216264									1														0	5000000	1.250000	10098	8781	0.626820	48	17570	54932	0.632580	60	kept	dominant_init_pair
+0	seal	walrus	chr15	HiC_scaffold_6	300	5562827									1														0	5000000	1.250000	10098	8781	0.626820	48	17153	44172	0.631820	60	kept	dominant_init_pair
+0	seal	walrus	chr15	HiC_scaffold_7	1	14246									0														1	5000000	1.250000	10098	8781	0.626820	48	14246	14246	0.867680	60	dropped	drop_non_dominant_single_block
+0	seal	walrus	chr15	HiC_scaffold_17	17	316610									1														0	5000000	1.250000	10098	8781	0.626820	48	17965	32776	0.685640	60	kept	dominant_init_pair
+0	seal	walrus	chr16	HiC_scaffold_16	168	3201223									1														0	5000000	1.250000	10098	8781	0.626820	48	17476	35964	0.700550	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_1	chr5	703	51499566									1														0	5000000	1.250000	1953	1953	0.835780	3	63801	355811	0.836770	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_1	chr13	306	21534196									1														0	5000000	1.250000	1953	1953	0.835780	3	63101	182516	0.836600	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_2	chr2	861	58715172									1														0	5000000	1.250000	1953	1953	0.835780	3	61022	200033	0.836500	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_3	chr1	1059	78209986									1														0	5000000	1.250000	1953	1953	0.835780	3	63770	330925	0.835910	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_4	chr3	909	63952368									1														0	5000000	1.250000	1953	1953	0.835780	3	61039	249917	0.838610	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_5	chr4	853	61592129									1														0	5000000	1.250000	1953	1953	0.835780	3	63156	270763	0.836080	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_6	chr14	349	23706599									1														0	5000000	1.250000	1953	1953	0.835780	3	62772	198882	0.836390	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_6	chr17	163	10834515									1														0	5000000	1.250000	1953	1953	0.835780	3	60578	166416	0.839710	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_7	chr6	588	42422215									1														0	5000000	1.250000	1953	1953	0.835780	3	63728	286659	0.835780	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_8	chr8	589	41376576									1														0	5000000	1.250000	1953	1953	0.835780	3	61220	208590	0.835910	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_9	chr7	676	48006820									1														0	5000000	1.250000	1953	1953	0.835780	3	63090	223486	0.836510	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_10	chr9	564	40606892									1														0	5000000	1.250000	1953	1953	0.835780	3	64469	235704	0.836590	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_11	chrX	646	49092040									1														0	5000000	1.250000	1953	1953	0.835780	3	65361	293483	0.836470	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_12	chr10	396	28195506									1														0	5000000	1.250000	1953	1953	0.835780	3	62189	212292	0.837250	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_13	chr12	430	30212139									1														0	5000000	1.250000	1953	1953	0.835780	3	61828	201913	0.836840	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_14	chr11	410	29945293									1														0	5000000	1.250000	1953	1953	0.835780	3	64335	223463	0.836550	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_15	chr15	329	23012792									1														0	5000000	1.250000	1953	1953	0.835780	3	61497	257958	0.840530	60	kept	dominant_init_pair
+1	walrus	hai_lion	HiC_scaffold_16	chr16	169	11224135									1														0	5000000	1.250000	1953	1953	0.835780	3	60750	205641	0.841970	60	kept	dominant_init_pair
