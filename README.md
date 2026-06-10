@@ -71,6 +71,18 @@ Open the output HTML file in a browser:
 dzc_synteny_out/<prefix>.multi_synteny.html
 ```
 
+## Demo
+
+Click the link below to open an interactive example HTML result in your browser:
+
+[Open demo: seal_hailion_haixiang.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/2023265214/genome-synteny-tool/blob/main/demo/seal_hailion_haixiang.multi_synteny.html)
+
+The same file is stored in this repository at:
+
+```text
+demo/seal_hailion_haixiang.multi_synteny.html
+```
+
 ## What This Software Can Do
 
 DZC Synteny Plot can:
@@ -545,4 +557,3 @@ Example loose setting:
 ## Citation
 
 If this tool is useful for your work, please cite or acknowledge DZC Synteny Plot and include the GitHub repository link.
-
