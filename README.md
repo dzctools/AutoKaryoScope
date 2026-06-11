@@ -75,43 +75,30 @@ autokaryoscope_out/<prefix>.multi_synteny.html
 
 ## Demo
 
-Two demo result sets are included in this repository.
+Demo data are distributed separately from the source code so that the software package remains lightweight.
 
-### Demo 1: seal, sea lion, and walrus
+Download the demo package from GitHub Releases:
 
-Open the interactive HTML result:
+```text
+https://github.com/2023265214/AutoKaryoScope/releases/tag/demo-data-v1.0.1
+```
+
+Direct demo package asset:
+
+```text
+https://github.com/2023265214/AutoKaryoScope/releases/download/demo-data-v1.0.1/AutoKaryoScope_demo.zip
+```
+
+The demo package contains two result sets:
 
 ```text
 demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html
-```
-
-Online preview:
-
-[Open demo: seal_hai_lion_walrus.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/2023265214/genome-synteny-tool/blob/main/demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html)
-
-This demo directory contains only the interactive HTML file.
-
-The seal, sea lion, and walrus genomes used for this demo are T2T genomes from our ongoing manuscript. The genome assemblies will be released after the manuscript is accepted.
-
-### Demo 2: 10 animals
-
-Open the interactive HTML result:
-
-```text
 demo/10animals/animal_10species_test9_block10000.multi_synteny.html
 ```
 
-Online preview:
+The 10-animal demo package also contains the corresponding compressed PAF files and generated result reports.
 
-[Open demo: animal_10species_test9_block10000.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/2023265214/genome-synteny-tool/blob/main/demo/10animals/animal_10species_test9_block10000.multi_synteny.html)
-
-The corresponding compressed PAF files and all generated result files are stored in:
-
-```text
-demo/10animals/
-```
-
-The public assembly accessions used for this demonstration are listed below. The order from first to last is also the adjacent PAF order used by `--pafs`.
+The public assembly accessions used for the 10-animal demonstration are listed below. The order from first to last is also the adjacent PAF order used by `--pafs`.
 
 ```text
 GCA_030062865.2
@@ -127,14 +114,7 @@ GCF_008692025.1
 GCA_005190385.4
 ```
 
-`Neophocaena_sunameri` is our newly assembled T2T genome and has not yet been published, so the genome assembly itself is not included in this repository.
-
-Some large PAF files are split after compression to stay below GitHub file size limits. To restore a split file:
-
-```bash
-cat example.paf.gz.part-* > example.paf.gz
-gunzip example.paf.gz
-```
+`Neophocaena_sunameri` is our newly assembled T2T genome and has not yet been published, so the genome assembly itself is not included in this repository. The seal, sea lion, and walrus genomes used for the seal/sea-lion/walrus demo are also T2T genomes from our ongoing manuscript and will be released after the manuscript is accepted.
 
 ## Recommended Workflow Before Running
 
