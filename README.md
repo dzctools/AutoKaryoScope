@@ -30,19 +30,6 @@ Install the package in editable mode:
 pip install -e .
 ```
 
-Run a simple two-genome example from existing PAF:
-
-```bash
-python AutoKaryoScope.py \
-  --top-genome genomeA.fa \
-  --bottom-genome genomeB.fa \
-  --paf A_vs_B.paf \
-  --top-label Genome_A \
-  --bottom-label Genome_B \
-  -o ./autokaryoscope_out \
-  --prefix A_vs_B
-```
-
 Run a multi-genome example from existing PAF files:
 
 ```bash
