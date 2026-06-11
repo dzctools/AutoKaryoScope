@@ -1,3 +1,0 @@
-adjacent_pair	pair_label	preset	raw_blocks	blocks_before_partner_prune	dropped_partner_blocks	tuned_blocks	target_blocks	reached_target	fill_mode_block_threshold	score_mode	block_mode	block_limit	chr_fill_target	chr_fill_min	chr_fill_mean	chr_fill_pass_fraction	chr_fill_pass_count	chr_fill_total_chr	score	coverage	min_block	min_identity	min_mapq	min_pair_aln	min_pair_blocks	max_partners_per_chr	partner_cap_mode	selected
-0	seal_vs_walrus	asm5	470721	25113	9	10000	5000	1	300	block_limit_cap	1	10000	0.9	0.0	0.12964293275241048	0.0	0	35	221.897032	0.971429	10098	0.62682	48	8781	1	4	both	1
-1	walrus_vs_hai_lion	asm5	155080	119279	720	10000	5000	1	300	block_limit_cap	1	10000	0.9	0.0	0.7709616499104269	0.0	0	36	743.366159	0.944444	1953	0.83578	3	1953	1	4	both	1
