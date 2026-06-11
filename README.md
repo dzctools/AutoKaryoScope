@@ -30,6 +30,8 @@ Install the package in editable mode:
 pip install -e .
 ```
 
+Unless necessary, please use the default parameters whenever possible, even though detailed optional parameters are provided. If genome files are available, users may also provide the genome files directly when using PAF files; FAI or BED files are not strictly required as input. The main purpose of this step is simply to provide chromosome coordinate information.
+
 Run a multi-genome example :
 
 ```bash
