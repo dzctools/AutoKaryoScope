@@ -75,9 +75,33 @@ autokaryoscope_out/<prefix>.multi_synteny.html
 
 ## Demo
 
-Demo data are distributed separately from the source code so that the software package remains lightweight.
+Two lightweight interactive HTML demos are included directly in this repository, so users can open them without downloading the large demo data package.
 
-Download the demo package from GitHub Releases:
+### Demo 1: seal, sea lion, and walrus
+
+Repository path:
+
+```text
+demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html
+```
+
+Online preview:
+
+[Open demo: seal_hai_lion_walrus.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/2023265214/AutoKaryoScope/blob/main/demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html)
+
+### Demo 2: 10 animals
+
+Repository path:
+
+```text
+demo/10animals/animal_10species_test9_block10000.multi_synteny.html
+```
+
+Online preview:
+
+[Open demo: animal_10species_test9_block10000.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/2023265214/AutoKaryoScope/blob/main/demo/10animals/animal_10species_test9_block10000.multi_synteny.html)
+
+Large demo resources are distributed separately from the source code so that the software package remains lightweight. Download the complete demo package, including compressed PAF files and generated result reports, from GitHub Releases:
 
 ```text
 https://github.com/2023265214/AutoKaryoScope/releases/tag/demo-data-v1.0.1
@@ -88,15 +112,6 @@ Direct demo package asset:
 ```text
 https://github.com/2023265214/AutoKaryoScope/releases/download/demo-data-v1.0.1/AutoKaryoScope_demo.zip
 ```
-
-The demo package contains two result sets:
-
-```text
-demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html
-demo/10animals/animal_10species_test9_block10000.multi_synteny.html
-```
-
-The 10-animal demo package also contains the corresponding compressed PAF files and generated result reports.
 
 The public assembly accessions used for the 10-animal demonstration are listed below. The order from first to last is also the adjacent PAF order used by `--pafs`.
 
