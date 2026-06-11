@@ -8,12 +8,14 @@ This project is actively used across our research group and will be referenced i
 
 ## Quick Start
 
-Clone the software from GitHub:
+Clone only the current software snapshot from GitHub. This avoids downloading old large PAF files that may exist in repository history:
 
 ```bash
-git clone https://github.com/dzctools/AutoKaryoScope.git
+git clone --depth 1 https://github.com/dzctools/AutoKaryoScope.git
 cd AutoKaryoScope
 ```
+
+Large demo data and example PAF files are provided separately through GitHub Releases, not through the recommended software clone.
 
 Create the recommended conda environment:
 
