@@ -1,6 +1,6 @@
-# DZC Synteny Plot
+# AutoKyS
 
-DZC Synteny Plot is a Python tool for drawing interactive multi-genome synteny maps from genome FASTA files and PAF alignments. It was designed for chromosome-scale comparative genomics, especially for visualizing T2T/non-T2T genome relationships, chromosome-level collinearity, inversions, fusions, translocations, and insertion/deletion-like structural differences.
+AutoKyS is a Python tool for drawing interactive multi-genome synteny maps from genome FASTA files and PAF alignments. It was designed for chromosome-scale comparative genomics, especially for visualizing T2T/non-T2T genome relationships, chromosome-level collinearity, inversions, fusions, translocations, and insertion/deletion-like structural differences.
 
 The main output is a self-contained HTML file with an interactive SVG canvas. The HTML interface supports chromosome focusing, chromosome flipping, SV coloring, manual chromosome color adjustment, and export of the current view to SVG, PNG, and PDF.
 
@@ -37,7 +37,7 @@ python draw_picture_html_auto_v6.py \
   --paf A_vs_B.paf \
   --top-label Genome_A \
   --bottom-label Genome_B \
-  -o ./dzc_synteny_out \
+  -o ./autokys_out \
   --prefix A_vs_B
 ```
 
@@ -48,7 +48,7 @@ python draw_picture_html_auto_v6.py \
   --genomes genome1.fa genome2.fa genome3.fa genome4.fa \
   --genome-labels G1,G2,G3,G4 \
   --pafs G1_vs_G2.paf,G2_vs_G3.paf,G3_vs_G4.paf \
-  -o ./dzc_synteny_out \
+  -o ./autokys_out \
   --prefix four_genomes \
   --title "Four-genome synteny"
 ```
@@ -60,7 +60,7 @@ python draw_picture_html_auto_v6.py \
   --genomes genome1.fa genome2.fa genome3.fa genome4.fa \
   --genome-labels G1,G2,G3,G4 \
   --pafs G1_vs_G2.paf,G2_vs_G3.paf,G3_vs_G4.paf \
-  -o ./dzc_synteny_out \
+  -o ./autokys_out \
   --prefix four_genomes_block8000 \
   -block \
   --block-limit 8000 \
@@ -70,7 +70,7 @@ python draw_picture_html_auto_v6.py \
 Open the output HTML file in a browser:
 
 ```text
-dzc_synteny_out/<prefix>.multi_synteny.html
+autokys_out/<prefix>.multi_synteny.html
 ```
 
 ## Demo
@@ -140,7 +140,7 @@ gunzip example.paf.gz
 
 ### 1. For multi-genome analysis, run minimap2 yourself first
 
-For multi-species datasets, it is recommended to generate PAF files before running DZC Synteny Plot. This makes the plotting step reproducible and easier to parallelize.
+For multi-species datasets, it is recommended to generate PAF files before running AutoKyS. This makes the plotting step reproducible and easier to parallelize.
 
 Recommended minimap2 command:
 
@@ -176,7 +176,7 @@ third_pair.paf  = G3 vs G4
 
 ### 2. Limit block number for large HTML output
 
-By default, DZC Synteny Plot does not force a fixed final block limit. It tries to keep the best syntenic matches after optimization. For large or noisy datasets, this can produce very large HTML files.
+By default, AutoKyS does not force a fixed final block limit. It tries to keep the best syntenic matches after optimization. For large or noisy datasets, this can produce very large HTML files.
 
 If your computer has limited memory or the browser is slow, use:
 
@@ -206,7 +206,7 @@ If the demo file is hosted online, open the provided GitHub Pages or release lin
 
 ### 4. Test with example PAF files
 
-Example PAF files used in our tests can be provided through a release, cloud storage link, or project data directory. After downloading them, run DZC Synteny Plot with `--paf` or `--pafs`.
+Example PAF files used in our tests can be provided through a release, cloud storage link, or project data directory. After downloading them, run AutoKyS with `--paf` or `--pafs`.
 
 Expected layout for a multi-genome test:
 
@@ -232,7 +232,7 @@ python draw_picture_html_auto_v6.py \
 
 ## What This Software Can Do
 
-DZC Synteny Plot can:
+AutoKyS can:
 
 - Draw two-genome and multi-genome synteny maps.
 - Use existing PAF files or automatically run minimap2.
@@ -325,7 +325,7 @@ The output is self-contained and can usually be opened without a web server.
 
 ## Configuration File
 
-DZC Synteny Plot supports a JSON configuration file for default parameters and colors.
+AutoKyS supports a JSON configuration file for default parameters and colors.
 
 Generate a template:
 
@@ -579,4 +579,4 @@ Example loose setting:
 
 ## Citation
 
-If this tool is useful for your work, please cite or acknowledge DZC Synteny Plot and include the GitHub repository link.
+If this tool is useful for your work, please cite or acknowledge AutoKyS and include the GitHub repository link.
