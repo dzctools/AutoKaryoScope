@@ -11,8 +11,8 @@ This project is actively used across our research group and will be referenced i
 Clone the software from GitHub:
 
 ```bash
-git clone https://github.com/2023265214/genome-synteny-tool.git
-cd genome-synteny-tool
+git clone https://github.com/dzctools/AutoKaryoScope.git
+cd AutoKaryoScope
 ```
 
 Create the recommended conda environment:
@@ -87,7 +87,7 @@ demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html
 
 Online preview:
 
-[Open demo: seal_hai_lion_walrus.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/2023265214/AutoKaryoScope/blob/main/demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html)
+[Open demo: seal_hai_lion_walrus.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/dzctools/AutoKaryoScope/blob/main/demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html)
 
 ### Demo 2: 10 animals
 
@@ -99,18 +99,18 @@ demo/10animals/animal_10species_test9_block10000.multi_synteny.html
 
 Online preview:
 
-[Open demo: animal_10species_test9_block10000.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/2023265214/AutoKaryoScope/blob/main/demo/10animals/animal_10species_test9_block10000.multi_synteny.html)
+[Open demo: animal_10species_test9_block10000.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/dzctools/AutoKaryoScope/blob/main/demo/10animals/animal_10species_test9_block10000.multi_synteny.html)
 
 Large demo resources are distributed separately from the source code so that the software package remains lightweight. Download the complete demo package, including compressed PAF files and generated result reports, from GitHub Releases:
 
 ```text
-https://github.com/2023265214/AutoKaryoScope/releases/tag/demo-data-v1.0.1
+https://github.com/dzctools/AutoKaryoScope/releases/tag/demo-data-v1.0.1
 ```
 
 Direct demo package asset:
 
 ```text
-https://github.com/2023265214/AutoKaryoScope/releases/download/demo-data-v1.0.1/AutoKaryoScope_demo.zip
+https://github.com/dzctools/AutoKaryoScope/releases/download/demo-data-v1.0.1/AutoKaryoScope_demo.zip
 ```
 
 The public assembly accessions used for the 10-animal demonstration are listed below. The order from first to last is also the adjacent PAF order used by `--pafs`.
