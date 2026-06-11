@@ -30,7 +30,7 @@ Install the package in editable mode:
 pip install -e .
 ```
 
-Run a multi-genome example from existing PAF files:
+Run a multi-genome example :
 
 ```bash
 python AutoKaryoScope.py \
@@ -41,6 +41,19 @@ python AutoKaryoScope.py \
   --prefix four_genomes \
   --title "Four-genome synteny"
 ```
+
+Run a multi-genome example from existing PAF files:
+
+```bash
+python AutoKaryoScope.py \
+  --genomes genome1.fai/genome1.bed genome2.fai/genome2.bed genome3.fai/genome3.bed genome4.fai/genome4.bed \
+  --genome-labels G1,G2,G3,G4 \
+  --pafs G1_vs_G2.paf,G2_vs_G3.paf,G3_vs_G4.paf \
+  -o ./autokaryoscope_out \
+  --prefix four_genomes \
+  --title "Four-genome synteny"
+```
+BED file contains three required columns: chromosome name, start coordinate and end coordinate.
 
 For large datasets or ordinary desktop computers, use block-limited mode:
 
