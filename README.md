@@ -4,6 +4,8 @@ DZC Synteny Plot is a Python tool for drawing interactive multi-genome synteny m
 
 The main output is a self-contained HTML file with an interactive SVG canvas. The HTML interface supports chromosome focusing, chromosome flipping, SV coloring, manual chromosome color adjustment, and export of the current view to SVG, PNG, and PDF.
 
+This project is actively used across our research group and will be referenced in multiple papers from our team; it is genuinely convenient for daily comparative genomics work, and we warmly welcome you to try it.
+
 ## Quick Start
 
 Clone the software from GitHub:
