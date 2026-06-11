@@ -34,9 +34,13 @@ def split_csv(s):
 def label_from_path(path):
     p = Path(path)
     name = p.name
-    for suffix in [".gz", ".fa", ".fasta", ".fna", ".fas"]:
-        if name.endswith(suffix):
-            name = name[:-len(suffix)]
+    changed = True
+    while changed:
+        changed = False
+        for suffix in [".gz", ".fai", ".bed", ".fa", ".fasta", ".fna", ".fas"]:
+            if name.endswith(suffix):
+                name = name[:-len(suffix)]
+                changed = True
     return name
 
 

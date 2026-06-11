@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .autotune import auto_tune_paf_filters
 from .config import load_user_config, write_config_template
-from .fasta import auto_min_chr_len_for_records, filter_records_by_length, read_fasta_records
+from .fasta import auto_min_chr_len_for_records, filter_records_by_length, is_fasta_input, read_fasta_records
 from .filters import (
     adjacent_pair_coverage,
     apply_filter_params,
@@ -291,17 +291,14 @@ def prepare_genome_inputs(args):
     """
     Return genome paths and labels.
 
-    Multi mode:
-      --genomes g1.fa g2.fa g3.fa
+    Unified genome mode:
+      --genomes g1.fa g2.fa [g3.fa ...]
       --genome-labels A,B,C
-
-    Two-genome compatibility mode:
-      --top-genome top.fa --bottom-genome bottom.fa
     """
     if args.genomes:
         genome_paths = [str(Path(x).expanduser().resolve()) for x in args.genomes]
         if len(genome_paths) < 2:
-            raise ValueError("--genomes requires at least two FASTA files")
+            raise ValueError("--genomes requires at least two genome record files")
 
         if args.genome_labels:
             labels = split_csv(args.genome_labels)
@@ -313,8 +310,13 @@ def prepare_genome_inputs(args):
         return genome_paths, labels
 
     if not args.top_genome or not args.bottom_genome:
-        raise ValueError("Use either --genomes g1.fa g2.fa ... or --top-genome + --bottom-genome")
+        raise ValueError("Use --genomes g1.fa/g1.fai/g1.bed g2.fa/g2.fai/g2.bed [g3 ...]")
 
+    print(
+        "[warning] --top-genome/--bottom-genome are legacy aliases. "
+        "Please use --genomes top bottom and --pafs pair.paf.",
+        file=sys.stderr,
+    )
     genome_paths = [
         str(Path(args.top_genome).expanduser().resolve()),
         str(Path(args.bottom_genome).expanduser().resolve()),
@@ -335,20 +337,20 @@ def main():
     parser.add_argument("--write-config-template", default=None,
                         help="Write an example JSON config file and exit.")
 
-    # Multi-genome mode
+    # Genome inputs. The same mode is used for two or more genomes.
     parser.add_argument("--genomes", nargs="+", default=None,
-                        help="Multiple genome FASTA files. Adjacent genomes are aligned and drawn as rows.")
+                        help="Two or more genome files. Accepts FASTA, samtools .fai, or BED-like chr/start/end files. FASTA is required when PAF is not provided.")
     parser.add_argument("--genome-labels", default=None,
                         help="Comma-separated labels for --genomes, same order and same count.")
     parser.add_argument("--pafs", default=None,
-                        help="Comma-separated existing PAF files for adjacent genome pairs. Count must be N-1.")
+                        help="Comma-separated existing PAF files for adjacent genome pairs. Count must be N-1, including one PAF for two genomes.")
 
-    # Backward-compatible two-genome mode
-    parser.add_argument("--top-genome", default=None)
-    parser.add_argument("--bottom-genome", default=None)
-    parser.add_argument("--paf", default=None, help="Existing PAF for two-genome mode")
-    parser.add_argument("--top-label", default="Top genome")
-    parser.add_argument("--bottom-label", default="Bottom genome")
+    # Legacy aliases kept for old scripts; hidden from --help.
+    parser.add_argument("--top-genome", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--bottom-genome", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--paf", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--top-label", default="Top genome", help=argparse.SUPPRESS)
+    parser.add_argument("--bottom-label", default="Bottom genome", help=argparse.SUPPRESS)
 
     # Output
     parser.add_argument("-o", "--outdir", default="wg_html_multi_synteny")
@@ -604,16 +606,29 @@ def main():
     # Existing PAF mode cannot switch preset, because the PAF has already been generated.
 
     preset_selection_tsv = outdir / f"{prefix}.preset_selection_report.tsv"
-    use_existing_paf = bool(args.pafs or (args.paf and n == 2))
+    if args.paf and not args.pafs:
+        if n != 2:
+            raise ValueError("--paf is a legacy alias only for two genomes. Use --pafs for unified input.")
+        print("[warning] --paf is a legacy alias. Please use --pafs pair.paf.", file=sys.stderr)
+        args.pafs = args.paf
+
+    use_existing_paf = bool(args.pafs)
 
     if args.pafs:
         fixed_paf_files = [str(Path(x).expanduser().resolve()) for x in split_csv(args.pafs)]
         if len(fixed_paf_files) != n - 1:
-            raise ValueError("--pafs must contain exactly N-1 PAF files for --genomes")
-    elif args.paf and n == 2:
-        fixed_paf_files = [str(Path(args.paf).expanduser().resolve())]
+            raise ValueError("--pafs must contain exactly N-1 PAF files for --genomes, including one PAF for two genomes")
     else:
         fixed_paf_files = None
+
+    if not use_existing_paf:
+        non_fasta_inputs = [p for p in genome_paths if not is_fasta_input(p)]
+        if non_fasta_inputs:
+            raise ValueError(
+                "FASTA input is required when PAF is not provided, because AutoKaryoScope must run minimap2. "
+                "Use .fai or BED only together with --paf/--pafs. Non-FASTA inputs: "
+                + ", ".join(non_fasta_inputs)
+            )
 
     if use_existing_paf:
         preset_candidates_base = ["existing_paf"]

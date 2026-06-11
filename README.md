@@ -1,6 +1,6 @@
 # AutoKaryoScope
 
-AutoKaryoScope is a Python tool for drawing interactive multi-genome synteny maps from genome FASTA files and PAF alignments. It was designed for chromosome-scale comparative genomics, especially for visualizing T2T/non-T2T genome relationships, chromosome-level collinearity, inversions, fusions, translocations, and insertion/deletion-like structural differences.
+AutoKaryoScope is a Python tool for drawing interactive multi-genome synteny maps from genome FASTA/FAI/BED record files and PAF alignments. It was designed for chromosome-scale comparative genomics, especially for visualizing T2T/non-T2T genome relationships, chromosome-level collinearity, inversions, fusions, translocations, and insertion/deletion-like structural differences.
 
 The main output is a self-contained HTML file with an interactive SVG canvas. The HTML interface supports chromosome focusing, chromosome flipping, SV coloring, manual chromosome color adjustment, and export of the current view to SVG, PNG, and PDF.
 
@@ -30,9 +30,20 @@ Install the package in editable mode:
 pip install -e .
 ```
 
-Unless necessary, please use the default parameters whenever possible, even though detailed optional parameters are provided. If genome files are available, users may also provide the genome files directly when using PAF files; FAI or BED files are not strictly required as input. The main purpose of this step is simply to provide chromosome coordinate information.
+Unless necessary, please use the default parameters whenever possible. AutoKaryoScope uses one unified input style for both two-genome and multi-genome analyses: provide two or more files with `--genomes`, and provide adjacent PAF files with `--pafs`.
 
-Run a multi-genome example :
+Run a two-genome example from an existing PAF:
+
+```bash
+python AutoKaryoScope.py \
+  --genomes genomeA.fa genomeB.fa \
+  --genome-labels Genome_A,Genome_B \
+  --pafs A_vs_B.paf \
+  -o ./autokaryoscope_out \
+  --prefix A_vs_B
+```
+
+Run a multi-genome example:
 
 ```bash
 python AutoKaryoScope.py \
@@ -44,18 +55,19 @@ python AutoKaryoScope.py \
   --title "Four-genome synteny"
 ```
 
-Run a multi-genome example from existing PAF files:
+When existing PAF files are provided, `--genomes` can use FASTA, samtools `.fai`, or BED-like chromosome coordinate files. Full FASTA files are only required when AutoKaryoScope needs to run minimap2 automatically.
 
 ```bash
 python AutoKaryoScope.py \
-  --genomes genome1.fai/genome1.bed genome2.fai/genome2.bed genome3.fai/genome3.bed genome4.fai/genome4.bed \
+  --genomes genome1.fa.fai genome2.fa.fai genome3.fa.fai genome4.fa.fai \
   --genome-labels G1,G2,G3,G4 \
   --pafs G1_vs_G2.paf,G2_vs_G3.paf,G3_vs_G4.paf \
   -o ./autokaryoscope_out \
   --prefix four_genomes \
   --title "Four-genome synteny"
 ```
-BED file contains three required columns: chromosome name, start coordinate and end coordinate.
+
+BED-like input requires at least three columns: chromosome name, start coordinate, and end coordinate.
 
 For large datasets or ordinary desktop computers, use block-limited mode:
 
@@ -204,7 +216,7 @@ If the demo file is hosted online, open the provided GitHub Pages or release lin
 
 ### 4. Test with example PAF files
 
-Example PAF files used in our tests can be provided through a release, cloud storage link, or project data directory. After downloading them, run AutoKaryoScope with `--paf` or `--pafs`.
+Example PAF files used in our tests can be provided through a release, cloud storage link, or project data directory. After downloading them, run AutoKaryoScope with `--pafs`.
 
 Expected layout for a multi-genome test:
 
@@ -278,7 +290,7 @@ If you already have a Python environment:
 pip install -e .
 ```
 
-`minimap2` is required only when the software is asked to generate PAF files automatically. If you provide `--paf` or `--pafs`, minimap2 is not required during plotting.
+`minimap2` is required only when the software is asked to generate PAF files automatically. If you provide `--pafs`, minimap2 is not required during plotting.
 
 ## Output Files
 
@@ -455,14 +467,9 @@ Example loose setting:
 
 | Parameter | Description |
 |---|---|
-| `--genomes` | FASTA files for multi-genome mode. |
+| `--genomes` | Two or more genome record files. Accepts FASTA, samtools `.fai`, or BED-like chromosome coordinate files. |
 | `--genome-labels` | Comma-separated labels for `--genomes`. |
-| `--pafs` | Comma-separated PAF files for adjacent genome pairs. |
-| `--top-genome` | First genome in two-genome mode. |
-| `--bottom-genome` | Second genome in two-genome mode. |
-| `--paf` | Existing PAF file for two-genome mode. |
-| `--top-label` | Label for top genome. |
-| `--bottom-label` | Label for bottom genome. |
+| `--pafs` | Comma-separated PAF files for adjacent genome pairs. For N genomes, provide N - 1 PAF files; for two genomes, provide one PAF file. |
 | `-o`, `--outdir` | Output directory. |
 | `--prefix` | Output file prefix. |
 | `--title` | HTML title. |
