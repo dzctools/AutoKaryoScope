@@ -89,6 +89,8 @@ Online preview:
 
 This demo directory contains only the interactive HTML file.
 
+The seal, sea lion, and walrus genomes used for this demo are T2T genomes from our ongoing manuscript. The genome assemblies will be released after the manuscript is accepted.
+
 ### Demo 2: 10 animals
 
 Open the interactive HTML result:
@@ -106,6 +108,24 @@ The corresponding compressed PAF files and all generated result files are stored
 ```text
 demo/10animals/
 ```
+
+The public assembly accessions used for this demonstration are listed below. The order from first to last is also the adjacent PAF order used by `--pafs`.
+
+```text
+GCA_030062865.2
+GCF_951394435.1
+GCF_949774975.1
+GCF_964270905.1
+GCF_964374135.1
+GCF_963455315.2
+GCF_039906515.1
+GCF_937001465.1
+GCF_963924675.1
+GCF_008692025.1
+GCA_005190385.4
+```
+
+`Neophocaena_sunameri` is our newly assembled T2T genome and has not yet been published, so the genome assembly itself is not included in this repository.
 
 Some large PAF files are split after compression to stay below GitHub file size limits. To restore a split file:
 
