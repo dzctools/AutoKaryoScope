@@ -63,8 +63,7 @@ python AutoKaryoScope.py \
   -o ./autokaryoscope_out \
   --prefix four_genomes_block8000 \
   -block \
-  --block-limit 8000 \
-  --target-blocks-per-pair 8000
+  --block-limit 8000
 ```
 
 Open the output HTML file in a browser:
@@ -176,7 +175,7 @@ By default, AutoKaryoScope does not force a fixed final block limit. It tries to
 If your computer has limited memory or the browser is slow, use:
 
 ```bash
--block --block-limit 8000 --target-blocks-per-pair 8000
+-block --block-limit 8000
 ```
 
 In block-limited mode, the algorithm first searches for a good syntenic solution, then uses rollback and cleanup steps to reduce noisy links and cap the result near the requested block count.
@@ -500,8 +499,8 @@ Example loose setting:
 | `--no-auto-tune-paf` | Disable automatic tuning and use manual thresholds. |
 | `-block`, `--block` | Enable block-limited mode. |
 | `--block-limit` | Block limit per adjacent genome pair in block-limited mode. |
-| `--target-blocks` | Global target block count. Usually `0` for auto. |
-| `--target-blocks-per-pair` | Target blocks per adjacent genome pair. |
+| `--target-blocks` | Legacy compatibility option. New block-limited runs should use `-block --block-limit`. |
+| `--target-blocks-per-pair` | Legacy compatibility option. New block-limited runs should use `-block --block-limit`. |
 | `--target-chr-fill` | Target chromosome fill rate. |
 | `--auto-rounds` | Number of automatic search rounds. |
 | `--auto-min-block-values` | Candidate minimum block lengths. |
