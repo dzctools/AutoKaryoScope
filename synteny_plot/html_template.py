@@ -327,7 +327,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     __ROW_OPTIONS__
   </select>
   <label>Focus chromosome(s)</label>
-  <input id="focusChr" list="focusChrList" placeholder="输入1条或多条染色体，逗号分隔" size="40"/>
+  <input id="focusChr" list="focusChrList" placeholder="Enter one or more chromosomes, separated by commas" size="40"/>
   <datalist id="focusChrList">__DATALIST__</datalist>
   <button onclick="focusChromosome()">View chr(s)</button>
   <button onclick="resetFocus()">Reset view</button>
@@ -418,7 +418,7 @@ function applyConfiguredCssColors() {
 applyConfiguredCssColors();
 
 let turned = INIT_TURNS.map(x => new Set(x));
-let focus = null;  // null or {row: number, chrs: ["chr1", ...]}
+let focus = [];  // [{row: number, chrs: ["chr1", ...]}, ...]
 let svColorMode = false;
 
 function updateChromDatalist(selectId, datalistId) {
@@ -833,7 +833,7 @@ function drawScaleBar(item, chrLen, baseY) {
   svg.appendChild(baseline);
 }
 
-function drawLinks(layouts, blocks) {
+function drawLinks(layouts, blocks, rowYByOriginal) {
   const visibleBlocks = blocks.filter(b => visibleSvTypes.has(svTypeOfBlock(b)));
   const wideThreshold = Number(CONFIG.wideRibbonThreshold || 300);
   const pairCounts = new Map();
@@ -870,8 +870,9 @@ function drawLinks(layouts, blocks) {
     const lx2 = mapX(lowerLayout, b.lower, b.lowerEnd);
     if (ux1 === null || ux2 === null || lx1 === null || lx2 === null) continue;
 
-    const y1 = CONFIG.rowYs[upperRow] + CONFIG.barHeight / 2;
-    const y2 = CONFIG.rowYs[lowerRow] - CONFIG.barHeight / 2;
+    if (rowYByOriginal[upperRow] === undefined || rowYByOriginal[lowerRow] === undefined) continue;
+    const y1 = rowYByOriginal[upperRow] + CONFIG.barHeight / 2;
+    const y2 = rowYByOriginal[lowerRow] - CONFIG.barHeight / 2;
     let pathAttrs;
     let upperFillText = "";
     let lowerFillText = "";
@@ -961,6 +962,22 @@ function hasRecord(row, chr) {
   return GENOMES[row].records.some(r => r.seq_id === chr);
 }
 
+const FOCUS_PARTNER_MIN_RATIO = 0.20;
+const FOCUS_PARTNER_MAX_CHRS = 3;
+
+function selectSupportedFocusPartners(scoreMap) {
+  const ranked = Array.from(scoreMap.entries())
+    .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), undefined, {numeric: true}));
+  if (ranked.length === 0) return [];
+
+  const bestScore = ranked[0][1] || 0;
+  const minScore = bestScore * FOCUS_PARTNER_MIN_RATIO;
+  return ranked
+    .filter(([, score]) => score >= minScore)
+    .slice(0, FOCUS_PARTNER_MAX_CHRS)
+    .map(([chr]) => chr);
+}
+
 function resolveFocusRow(requested, chrList) {
   if (requested !== "auto") return Number(requested);
 
@@ -980,11 +997,11 @@ function resolveFocusRow(requested, chrList) {
   }
 
   if (missing.length > 0) {
-    alert("找不到这些染色体：\n" + missing.join(", "));
+    alert("These chromosomes were not found:\n" + missing.join(", "));
     return null;
   }
   if (ambiguous.length > 0) {
-    alert("自动判断失败。以下染色体同时存在于多个基因组，或输入混合了不同基因组。请手动指定 View genome。\n" + ambiguous.join(", "));
+    alert("Auto detection failed. These chromosomes exist in multiple genomes, or the input mixes chromosomes from different genomes. Please select View genome manually.\n" + ambiguous.join(", "));
     return null;
   }
 
@@ -992,9 +1009,9 @@ function resolveFocusRow(requested, chrList) {
 }
 
 function getCurrentData() {
-  if (!focus) {
+  if (!focus || focus.length === 0) {
     return {
-      genomes: GENOMES.map(g => ({label: g.label, records: g.records})),
+      genomes: GENOMES.map((g, i) => ({label: g.label, records: g.records, rowIndex: i})),
       blocks: BLOCKS,
       note: ""
     };
@@ -1004,41 +1021,62 @@ function getCurrentData() {
   const active = [];
   for (let i = 0; i < n; i++) active.push(new Set());
 
-  for (const chr of focus.chrs) active[focus.row].add(chr);
+  for (const item of focus) {
+    const selectedRow = item.row;
+    let upperRow = selectedRow;
+    let lowerRow = selectedRow + 1;
+    if (selectedRow >= n - 1) {
+      upperRow = Math.max(0, selectedRow - 1);
+      lowerRow = selectedRow;
+    }
 
-  let changed = true;
-  while (changed) {
-    changed = false;
+    const selectedChrs = new Set(item.chrs);
+    for (const chr of item.chrs) active[selectedRow].add(chr);
+
+    const partnerScores = new Map();
     for (const b of BLOCKS) {
-      const u = b.pair;
-      const l = b.pair + 1;
-
-      if (active[u].has(b.upper) && !active[l].has(b.lower)) {
-        active[l].add(b.lower);
-        changed = true;
+      if (b.pair !== upperRow) continue;
+      if (selectedRow === upperRow && selectedChrs.has(b.upper)) {
+        partnerScores.set(b.lower, (partnerScores.get(b.lower) || 0) + Number(b.alnLen || 0));
       }
-      if (active[l].has(b.lower) && !active[u].has(b.upper)) {
-        active[u].add(b.upper);
-        changed = true;
+      if (selectedRow === lowerRow && selectedChrs.has(b.lower)) {
+        partnerScores.set(b.upper, (partnerScores.get(b.upper) || 0) + Number(b.alnLen || 0));
       }
     }
+
+    const selectedPartners = selectSupportedFocusPartners(partnerScores);
+    const partnerRow = selectedRow === upperRow ? lowerRow : upperRow;
+    for (const chr of selectedPartners) active[partnerRow].add(chr);
   }
 
   const genomes = [];
   for (let i = 0; i < n; i++) {
+    if (active[i].size === 0) continue;
     const names = Array.from(active[i]);
     genomes.push({
       label: GENOMES[i].label,
-      records: orderRecordsByNames(GENOMES[i].records, names)
+      records: orderRecordsByNames(GENOMES[i].records, names),
+      rowIndex: i
     });
   }
 
-  const blocks = BLOCKS.filter(b => active[b.pair].has(b.upper) && active[b.pair + 1].has(b.lower));
+  const blocks = BLOCKS.filter(b => {
+    const upperRow = b.pair;
+    const lowerRow = b.pair + 1;
+    return active[upperRow] &&
+      active[lowerRow] &&
+      active[upperRow].has(b.upper) &&
+      active[lowerRow].has(b.lower);
+  });
+
+  const focusText = focus
+    .map(item => `${GENOMES[item.row].label} [${item.chrs.join(", ")}]`)
+    .join("; ");
 
   return {
     genomes,
     blocks,
-    note: `Focused: ${GENOMES[focus.row].label} [${focus.chrs.join(", ")}] → ${blocks.length} block(s)`
+    note: `Focused: ${focusText}, ${blocks.length} block(s)`
   };
 }
 
@@ -1098,18 +1136,22 @@ function draw() {
 
   const plotWidth = CONFIG.width - CONFIG.marginLeft - CONFIG.marginRight;
   const layouts = [];
+  const rowYByOriginal = [];
 
   for (let i = 0; i < current.genomes.length; i++) {
+    const originalRow = current.genomes[i].rowIndex !== undefined ? current.genomes[i].rowIndex : i;
     const y = CONFIG.rowYs[i];
     drawText(CONFIG.marginLeft - 18, y + 5, current.genomes[i].label, "rowLabel", "end");
-    const layout = buildLayout(current.genomes[i].records, turned[i], CONFIG.marginLeft, plotWidth);
-    layouts.push(layout);
+    const layout = buildLayout(current.genomes[i].records, turned[originalRow], CONFIG.marginLeft, plotWidth);
+    layouts[originalRow] = layout;
+    rowYByOriginal[originalRow] = y;
   }
 
-  drawLinks(layouts, current.blocks);
+  drawLinks(layouts, current.blocks, rowYByOriginal);
 
   for (let i = 0; i < current.genomes.length; i++) {
-    drawChromosomes(current.genomes[i].records, layouts[i], CONFIG.rowYs[i], i);
+    const originalRow = current.genomes[i].rowIndex !== undefined ? current.genomes[i].rowIndex : i;
+    drawChromosomes(current.genomes[i].records, layouts[originalRow], CONFIG.rowYs[i], originalRow);
   }
 
   const visibleCount = current.blocks.filter(b => visibleSvTypes.has(svTypeOfBlock(b))).length;
@@ -1244,11 +1286,11 @@ function turnChromosome() {
   const chr = document.getElementById("turnChr").value.trim();
 
   if (!chr) {
-    alert("请输入要翻转的染色体名称");
+    alert("Please enter the chromosome name to turn.");
     return;
   }
   if (!hasRecord(row, chr)) {
-    alert(`在 ${GENOMES[row].label} 中找不到：${chr}`);
+    alert(`Not found in ${GENOMES[row].label}: ${chr}`);
     return;
   }
 
@@ -1268,7 +1310,7 @@ function focusChromosome() {
   const raw = document.getElementById("focusChr").value.trim();
 
   if (!raw) {
-    alert("请输入要单独查看的1条或多条染色体名称，可用逗号分隔");
+    alert("Please enter one or more chromosome names to view, separated by commas.");
     return;
   }
 
@@ -1278,18 +1320,26 @@ function focusChromosome() {
 
   const missing = chrList.filter(chr => !hasRecord(row, chr));
   if (missing.length > 0) {
-    alert(`在 ${GENOMES[row].label} 中找不到：\n` + missing.join(", "));
+    alert(`Not found in ${GENOMES[row].label}:\n` + missing.join(", "));
     return;
   }
 
-  focus = {row, chrs: chrList};
+  const existingFocus = focus.find(item => item.row === row);
+  const mergedChrList = existingFocus
+    ? uniqueKeepOrder(existingFocus.chrs.concat(chrList))
+    : chrList;
+  if (existingFocus) {
+    existingFocus.chrs = mergedChrList;
+  } else {
+    focus.push({row, chrs: mergedChrList});
+  }
   document.getElementById("focusRow").value = String(row);
-  document.getElementById("focusChr").value = chrList.join(", ");
+  document.getElementById("focusChr").value = mergedChrList.join(", ");
   draw();
 }
 
 function resetFocus() {
-  focus = null;
+  focus = [];
   document.getElementById("focusChr").value = "";
   document.getElementById("focusRow").value = "auto";
   draw();

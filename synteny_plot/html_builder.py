@@ -51,9 +51,10 @@ def build_html(genomes, blocks, init_turns,
     html = html.replace("__TITLE__", title)
     html = html.replace("__ROW_OPTIONS__", row_options)
     html = html.replace("__DATALIST__", datalist)
-    html = html.replace("__GENOMES__", json.dumps(genomes, ensure_ascii=False))
-    html = html.replace("__BLOCKS__", json.dumps(blocks, ensure_ascii=False))
-    html = html.replace("__INIT_TURNS__", json.dumps([sorted(x) for x in init_turns], ensure_ascii=False))
-    html = html.replace("__CONFIG__", json.dumps(config, ensure_ascii=False))
-    html = html.replace("__SV_EVENTS__", json.dumps(sv_data, ensure_ascii=False))
+    dump_opts = {"ensure_ascii": False, "separators": (",", ":")}
+    html = html.replace("__GENOMES__", json.dumps(genomes, **dump_opts))
+    html = html.replace("__BLOCKS__", json.dumps(blocks, **dump_opts))
+    html = html.replace("__INIT_TURNS__", json.dumps([sorted(x) for x in init_turns], **dump_opts))
+    html = html.replace("__CONFIG__", json.dumps(config, **dump_opts))
+    html = html.replace("__SV_EVENTS__", json.dumps(sv_data, **dump_opts))
     return html

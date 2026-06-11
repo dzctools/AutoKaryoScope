@@ -1,15 +1,15 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="synteny_plot",
+    name="AutoKaryoScope",
     version="1.0.0",
-    description="Interactive synteny plot with SV detection",
+    description="AutoKaryoScope interactive chromosome-scale synteny visualization",
     packages=find_packages(),
     python_requires=">=3.8",
     install_requires=[],
     entry_points={
         "console_scripts": [
-            "synteny-plot=synteny_plot.cli:main",
+            "AutoKaryoScope=synteny_plot.cli:main",
         ],
     },
 )

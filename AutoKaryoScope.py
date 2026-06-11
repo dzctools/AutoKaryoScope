@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compatibility launcher for the modular synteny plotting package."""
+"""Command-line launcher for AutoKaryoScope."""
 
 from synteny_plot.cli import main
 

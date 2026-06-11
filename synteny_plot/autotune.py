@@ -18,6 +18,8 @@ from .filters import (
 
 INITIAL_IDENTITY_CEILING = 0.99
 REPRESENTATIVE_MIN_ALN_LEN = 1000
+CHROMOSOME_MAX_IDENTITY_MIN_FRACTION = 0.50
+CHROMOSOME_MAX_MAPQ_MIN_FRACTION = 0.50
 
 
 def _clip(v, lo, hi, cast=float):
@@ -25,15 +27,121 @@ def _clip(v, lo, hi, cast=float):
     return cast(v)
 
 
+def _filter_low_quality_chromosomes(raw_blocks):
+    """
+    Remove chromosomes whose best alignment support is too weak before building
+    the dominant skeleton.
+
+    A chromosome whose maximum identity is less than half of the global maximum
+    is usually a small contaminating contig, mis-assembled fragment, or otherwise
+    unsuitable scaffold for estimating strict initial optimizer thresholds. A
+    chromosome whose best mapQ is less than half of the dataset's maximum mapQ
+    is also removed because it has no confidently placed alignment block for
+    skeleton initialization.
+    """
+    if not raw_blocks:
+        return list(raw_blocks), {
+            "init_chr_identity_global_max": 0.0,
+            "init_chr_identity_threshold": 0.0,
+            "init_chr_mapq_global_max": 0,
+            "init_chr_mapq_threshold": 0,
+            "init_chr_identity_removed_chromosomes": 0,
+            "init_chr_mapq_removed_chromosomes": 0,
+            "init_chr_quality_removed_chromosomes": 0,
+            "init_chr_identity_removed_blocks": 0,
+            "init_chr_mapq_removed_blocks": 0,
+            "init_chr_quality_removed_blocks": 0,
+        }, set()
+
+    global_max_identity = max(float(b.get("identity", 0.0) or 0.0) for b in raw_blocks)
+    global_max_mapq = max(int(b.get("mapq", 0) or 0) for b in raw_blocks)
+    identity_threshold = global_max_identity * CHROMOSOME_MAX_IDENTITY_MIN_FRACTION
+    mapq_threshold = int(global_max_mapq * CHROMOSOME_MAX_MAPQ_MIN_FRACTION)
+
+    chr_max_identity = {}
+    chr_max_mapq = {}
+    for b in raw_blocks:
+        pair = int(b["pair"])
+        identity = float(b.get("identity", 0.0) or 0.0)
+        mapq = int(b.get("mapq", 0) or 0)
+        for chr_key in ((pair, b["upper"]), (pair + 1, b["lower"])):
+            if identity > chr_max_identity.get(chr_key, -1.0):
+                chr_max_identity[chr_key] = identity
+            if mapq > chr_max_mapq.get(chr_key, -1):
+                chr_max_mapq[chr_key] = mapq
+
+    identity_removed_chr_keys = {
+        chr_key
+        for chr_key, max_identity in chr_max_identity.items()
+        if max_identity < identity_threshold
+    }
+    mapq_removed_chr_keys = {
+        chr_key
+        for chr_key, max_mapq in chr_max_mapq.items()
+        if max_mapq < mapq_threshold
+    }
+    removed_chr_keys = identity_removed_chr_keys | mapq_removed_chr_keys
+    if not removed_chr_keys:
+        return list(raw_blocks), {
+            "init_chr_identity_global_max": global_max_identity,
+            "init_chr_identity_threshold": identity_threshold,
+            "init_chr_mapq_global_max": global_max_mapq,
+            "init_chr_mapq_threshold": mapq_threshold,
+            "init_chr_identity_removed_chromosomes": 0,
+            "init_chr_mapq_removed_chromosomes": 0,
+            "init_chr_quality_removed_chromosomes": 0,
+            "init_chr_identity_removed_blocks": 0,
+            "init_chr_mapq_removed_blocks": 0,
+            "init_chr_quality_removed_blocks": 0,
+        }, removed_chr_keys
+
+    filtered_blocks = []
+    identity_removed_blocks = 0
+    mapq_removed_blocks = 0
+    removed_blocks = 0
+    for b in raw_blocks:
+        pair = int(b["pair"])
+        upper_key = (pair, b["upper"])
+        lower_key = (pair + 1, b["lower"])
+        removed_by_identity = upper_key in identity_removed_chr_keys or lower_key in identity_removed_chr_keys
+        removed_by_mapq = upper_key in mapq_removed_chr_keys or lower_key in mapq_removed_chr_keys
+        if removed_by_identity or removed_by_mapq:
+            removed_blocks += 1
+            if removed_by_identity:
+                identity_removed_blocks += 1
+            if removed_by_mapq:
+                mapq_removed_blocks += 1
+            continue
+        filtered_blocks.append(b)
+
+    return filtered_blocks, {
+        "init_chr_identity_global_max": global_max_identity,
+        "init_chr_identity_threshold": identity_threshold,
+        "init_chr_mapq_global_max": global_max_mapq,
+        "init_chr_mapq_threshold": mapq_threshold,
+        "init_chr_identity_removed_chromosomes": len(identity_removed_chr_keys),
+        "init_chr_mapq_removed_chromosomes": len(mapq_removed_chr_keys),
+        "init_chr_quality_removed_chromosomes": len(removed_chr_keys),
+        "init_chr_identity_removed_blocks": identity_removed_blocks,
+        "init_chr_mapq_removed_blocks": mapq_removed_blocks,
+        "init_chr_quality_removed_blocks": removed_blocks,
+    }, removed_chr_keys
+
+
 def _dominant_alignment_initial_state(raw_blocks):
     """
     Build data-driven initial filter thresholds from chromosome-dominant pairs.
 
     For every chromosome on both rows, the dominant partner is the chromosome pair
-    with the largest cumulative aligned length. One best alignment block is chosen
-    from each dominant pair, and global thresholds are set to the least stringent
-    values still preserving these representative dominant relationships.
+    with the largest cumulative aligned length. Each dominant chromosome pair
+    contributes one best-quality representative block to the initial skeleton.
+    Global thresholds are set from the minima across these representatives, so
+    every chromosome contributes its dominant signal without letting weak local
+    blocks inside a dominant pair drag the initial filters down.
     """
+    raw_block_count = len(raw_blocks)
+    raw_blocks, chromosome_quality_summary, removed_chr_keys = _filter_low_quality_chromosomes(raw_blocks)
+
     pair_stats = {}
     for b in raw_blocks:
         key = (int(b["pair"]), b["upper"], b["lower"])
@@ -60,6 +168,9 @@ def _dominant_alignment_initial_state(raw_blocks):
                 "init_method": "dominant_alignment_empty_fallback",
                 "init_dominant_pairs": 0,
                 "init_representative_blocks": 0,
+                "init_raw_blocks_before_chr_identity_filter": raw_block_count,
+                "init_raw_blocks_after_chr_identity_filter": 0,
+                **chromosome_quality_summary,
             },
             "dominant_chr_pair_keys": [],
             "dominant_chr_pair_records": [],
@@ -80,25 +191,21 @@ def _dominant_alignment_initial_state(raw_blocks):
     dominant_keys.update(best_upper.values())
     dominant_keys.update(best_lower.values())
 
-    representatives = []
-    representative_pair_aln = []
+    skeleton_blocks = []
+    skeleton_pair_aln = []
     dominant_records = []
     for key in dominant_keys:
         stat = pair_stats[key]
-        representative_candidates = [
-            b for b in stat["blocks"]
-            if int(b.get("alnLen", 0) or 0) >= REPRESENTATIVE_MIN_ALN_LEN
-        ] or stat["blocks"]
-        best_block = max(
-            representative_candidates,
+        display_block = max(
+            stat["blocks"],
             key=lambda b: (
-                float(b.get("identity", 0.0) or 0.0),
-                int(b.get("alnLen", 0) or 0),
                 int(b.get("mapq", 0) or 0),
+                int(b.get("alnLen", 0) or 0),
+                float(b.get("identity", 0.0) or 0.0),
             )
         )
-        representatives.append(best_block)
-        representative_pair_aln.append(int(best_block.get("alnLen", 0) or 0))
+        skeleton_blocks.append(display_block)
+        skeleton_pair_aln.append(int(display_block.get("alnLen", 0) or 0))
         pair, upper, lower = key
         dominant_records.append({
             "pair": pair,
@@ -106,24 +213,26 @@ def _dominant_alignment_initial_state(raw_blocks):
             "lower": lower,
             "dominant_aln_sum": int(stat.get("aln_sum", 0) or 0),
             "dominant_block_count": int(stat.get("block_count", 0) or 0),
-            "representative_upper_start": int(best_block.get("upperStart", 0) or 0),
-            "representative_upper_end": int(best_block.get("upperEnd", 0) or 0),
-            "representative_lower_start": int(best_block.get("lowerStart", 0) or 0),
-            "representative_lower_end": int(best_block.get("lowerEnd", 0) or 0),
-            "representative_aln_len": int(best_block.get("alnLen", 0) or 0),
-            "representative_identity": float(best_block.get("identity", 0.0) or 0.0),
-            "representative_mapq": int(best_block.get("mapq", 0) or 0),
+            "representative_upper_start": int(display_block.get("upperStart", 0) or 0),
+            "representative_upper_end": int(display_block.get("upperEnd", 0) or 0),
+            "representative_lower_start": int(display_block.get("lowerStart", 0) or 0),
+            "representative_lower_end": int(display_block.get("lowerEnd", 0) or 0),
+            "representative_aln_len": int(display_block.get("alnLen", 0) or 0),
+            "representative_identity": float(display_block.get("identity", 0.0) or 0.0),
+            "representative_mapq": int(display_block.get("mapq", 0) or 0),
         })
 
-    # These thresholds are inferred from the representative blocks, so the
-    # representatives themselves must be able to pass the initial filter.
-    min_block = max(1, min(int(b.get("alnLen", 0) or 0) for b in representatives))
+    # These thresholds are inferred from one best-quality representative per
+    # dominant chromosome pair. Taking each minimum independently preserves all
+    # chromosome-level dominant signals without using weak local blocks inside
+    # an otherwise good chromosome pair as initialization thresholds.
+    min_block = max(1, min(int(b.get("alnLen", 0) or 0) for b in skeleton_blocks))
     min_identity = min(
         INITIAL_IDENTITY_CEILING,
-        max(0.10, min(float(b.get("identity", 0.0) or 0.0) for b in representatives)),
+        max(0.10, min(float(b.get("identity", 0.0) or 0.0) for b in skeleton_blocks)),
     )
-    min_mapq = max(0, min(int(b.get("mapq", 0) or 0) for b in representatives))
-    min_pair_aln = max(0, min(int(x) for x in representative_pair_aln))
+    min_mapq = max(0, min(int(b.get("mapq", 0) or 0) for b in skeleton_blocks))
+    min_pair_aln = max(0, min(int(x) for x in skeleton_pair_aln))
 
     state = {
         "min_block": int(min_block),
@@ -136,7 +245,10 @@ def _dominant_alignment_initial_state(raw_blocks):
     summary = {
         "init_method": "chromosome_dominant_alignment",
         "init_dominant_pairs": len(dominant_keys),
-        "init_representative_blocks": len(representatives),
+        "init_representative_blocks": len(skeleton_blocks),
+        "init_raw_blocks_before_chr_identity_filter": raw_block_count,
+        "init_raw_blocks_after_chr_identity_filter": len(raw_blocks),
+        **chromosome_quality_summary,
         "init_min_block": state["min_block"],
         "init_min_identity": state["min_identity"],
         "init_min_mapq": state["min_mapq"],
@@ -232,7 +344,7 @@ def _score(
 
     # ------------------------------------------------------------------
     # chromosome retention protection
-    # prevent ASA from deleting too many chromosomes
+    # prevent optimizer from deleting too many chromosomes
     # ------------------------------------------------------------------
     coverage_reward = coverage * 8.0
 
@@ -542,6 +654,18 @@ def _select_rollback_snapshot(snapshots, noise_events):
     return rollback_snapshot, worst_event
 
 
+def _cleanup_rank(gain_metrics, current_noise_count, block_limit):
+    noise_reduction = int(current_noise_count) - int(gain_metrics.get("non_dominant_block_count", 0) or 0)
+    over_limit = int(gain_metrics.get("scored_blocks", 0) or 0) - int(block_limit)
+    return (
+        noise_reduction,
+        over_limit >= 0,
+        int(gain_metrics.get("dominant_block_count", 0) or 0),
+        -int(gain_metrics.get("non_dominant_block_count", 0) or 0),
+        int(gain_metrics.get("scored_blocks", 0) or 0),
+    )
+
+
 def _perturb(state):
     new_state = dict(state)
 
@@ -680,7 +804,7 @@ def _apply_with_empty_rescue(raw_blocks, params, max_partners, partner_cap_mode,
 
     The dominant-pair initialization is supposed to provide a chromosome-scale
     backbone. If the inferred thresholds are still too strict, relax them before
-    ASA scoring so the optimizer can expand from at least one real alignment.
+    optimizer scoring so the optimizer can expand from at least one real alignment.
     """
     state = dict(params)
     before, blocks, dropped, report = _apply(raw_blocks, state, max_partners, partner_cap_mode)
@@ -722,9 +846,11 @@ def auto_tune_paf_filters(raw_blocks, args):
     target_chr_fill = float(getattr(args, "target_chr_fill", 0.90))
     fill_mode_block_threshold = int(getattr(args, "fill_mode_block_threshold", 300))
 
-    asa_rounds = int(getattr(args, "asa_rounds", 200))
-    start_temp = float(getattr(args, "asa_start_temp", 5.0))
-    cooling = float(getattr(args, "asa_cooling", 0.97))
+    optimizer_rounds = int(getattr(args, "optimizer_rounds", 200))
+    start_temp = float(getattr(args, "optimizer_start_temp", 5.0))
+    cooling = float(getattr(args, "optimizer_cooling", 0.97))
+    block_mode = bool(getattr(args, "block", False))
+    block_limit = max(1, int(getattr(args, "block_limit", 5000)))
 
     dominant_init = _dominant_alignment_initial_state(raw_blocks)
     initial_seed_state = dict(dominant_init["state"])
@@ -798,6 +924,9 @@ def auto_tune_paf_filters(raw_blocks, args):
     stop_reason = ""
     stopped_round = 0
     noise_events = []
+    block_stop_triggered = bool(block_mode and len(best_scored_blocks) >= block_limit)
+    if block_stop_triggered:
+        stop_reason = f"block_limit_reached:{len(best_scored_blocks)}>={block_limit}"
     accepted_snapshots = [
         _state_snapshot(
             0,
@@ -844,6 +973,8 @@ def auto_tune_paf_filters(raw_blocks, args):
         "target_reached": int(current_reached),
         "fill_mode_block_threshold": fill_mode_block_threshold,
         "score_mode": "noise_aware_self_stopping",
+        "block_mode": int(block_mode),
+        "block_limit": block_limit,
         "stopped": 0,
         "stop_reason": "",
         "rescue_rounds": initial_rescue_rounds,
@@ -855,7 +986,9 @@ def auto_tune_paf_filters(raw_blocks, args):
         **initial_state,
     })
 
-    for round_id in range(1, asa_rounds + 1):
+    for round_id in range(1, optimizer_rounds + 1):
+        if block_stop_triggered:
+            break
 
         candidate = _perturb(best_state)
 
@@ -962,9 +1095,15 @@ def auto_tune_paf_filters(raw_blocks, args):
             if delta > 0:
                 is_best = True
 
+        block_limit_reached = bool(block_mode and accept and len(best_scored_blocks) >= block_limit)
+        if block_limit_reached:
+            block_stop_triggered = True
+            stopped_round = round_id
+            stop_reason = f"block_limit_reached:{len(best_scored_blocks)}>={block_limit}"
+
         history.append({
             "round": round_id,
-            "stage": "asa",
+            "stage": "optimizer",
             "temperature": temperature,
             "score": score,
             "accepted": int(accept),
@@ -988,8 +1127,10 @@ def auto_tune_paf_filters(raw_blocks, args):
             "target_reached": int(best_reached),
             "fill_mode_block_threshold": fill_mode_block_threshold,
             "score_mode": "noise_aware_self_stopping",
-            "stopped": int(stop_relaxing),
-            "stop_reason": stop_reason if stop_relaxing else "",
+            "block_mode": int(block_mode),
+            "block_limit": block_limit,
+            "stopped": int(stop_relaxing or block_limit_reached),
+            "stop_reason": stop_reason if (stop_relaxing or block_limit_reached) else "",
             "rescue_rounds": rescue_rounds,
             "rescue_action": rescue_action,
             "guard_action": guard_action,
@@ -999,7 +1140,7 @@ def auto_tune_paf_filters(raw_blocks, args):
             **candidate,
         })
 
-        if stop_relaxing:
+        if stop_relaxing or block_limit_reached:
             break
 
         temperature *= cooling
@@ -1026,7 +1167,7 @@ def auto_tune_paf_filters(raw_blocks, args):
                 f"rollback_round={rollback_snapshot['round']}"
             )
 
-            single_param_rounds = max(1, asa_rounds - int(stopped_round or 0))
+            single_param_rounds = max(1, optimizer_rounds - int(stopped_round or 0))
             tunable_params = (
                 "min_block",
                 "min_identity",
@@ -1165,6 +1306,8 @@ def auto_tune_paf_filters(raw_blocks, args):
                         "target_reached": int(best_reached),
                         "fill_mode_block_threshold": fill_mode_block_threshold,
                         "score_mode": "noise_aware_rollback_random_single_param",
+                        "block_mode": int(block_mode),
+                        "block_limit": block_limit,
                         "stopped": 0,
                         "stop_reason": stop_reason,
                         "rescue_rounds": selected["rescue_rounds"],
@@ -1211,6 +1354,8 @@ def auto_tune_paf_filters(raw_blocks, args):
                         "target_reached": int(best_reached),
                         "fill_mode_block_threshold": fill_mode_block_threshold,
                         "score_mode": "noise_aware_rollback_random_single_param",
+                        "block_mode": int(block_mode),
+                        "block_limit": block_limit,
                         "stopped": 1,
                         "stop_reason": stop_message,
                         "rescue_rounds": 0,
@@ -1223,18 +1368,215 @@ def auto_tune_paf_filters(raw_blocks, args):
                     })
                     break
 
+    if block_stop_triggered and best_scored_blocks:
+        current_gain = _gain_metrics(best_scored_blocks, dominant_chr_pair_keys)
+        current_noise_count = current_gain["non_dominant_block_count"]
+        best_cleanup = None
+        tunable_params = (
+            "min_block",
+            "min_identity",
+            "min_mapq",
+            "min_pair_aln",
+            "min_pair_blocks",
+        )
+
+        for param_name in tunable_params:
+            for candidate in _single_param_candidates(best_state, param_name):
+                before, blocks, dropped, report, candidate, rescue_rounds, rescue_action, guard_action = _apply_with_empty_rescue(
+                    raw_blocks,
+                    candidate,
+                    max_partners,
+                    partner_cap_mode,
+                )
+                scored_blocks, noise_ratio, noise_info = _score_blocks_after_noise_filter(
+                    blocks,
+                    dominant_chr_pair_keys,
+                    candidate,
+                )
+                if len(scored_blocks) < block_limit:
+                    continue
+                gain = _gain_metrics(scored_blocks, dominant_chr_pair_keys)
+                noise_reduction = current_noise_count - gain["non_dominant_block_count"]
+                if noise_reduction <= 0:
+                    continue
+                cov = len(collect_matched_chr_ids(scored_blocks)) / max(1, len(baseline_chr))
+                fill = _chr_fill_metrics(scored_blocks, baseline_chr, target_chr_fill)
+                score = _score(
+                    scored_blocks,
+                    target_blocks,
+                    cov,
+                    min_coverage,
+                    candidate,
+                    fill_metrics=fill,
+                    target_chr_fill=target_chr_fill,
+                    fill_mode_block_threshold=fill_mode_block_threshold,
+                    noise_ratio=noise_ratio,
+                )
+                rank = _cleanup_rank(gain, current_noise_count, block_limit)
+                cleanup = {
+                    "param_name": param_name,
+                    "candidate": candidate,
+                    "before": before,
+                    "blocks": blocks,
+                    "dropped": dropped,
+                    "report": report,
+                    "scored_blocks": scored_blocks,
+                    "noise_ratio": noise_ratio,
+                    "noise_info": noise_info,
+                    "gain": gain,
+                    "coverage": cov,
+                    "fill": fill,
+                    "score": score,
+                    "rank": rank,
+                    "noise_reduction": noise_reduction,
+                    "rescue_rounds": rescue_rounds,
+                    "rescue_action": rescue_action,
+                    "guard_action": guard_action,
+                }
+                if best_cleanup is None or rank > best_cleanup["rank"]:
+                    best_cleanup = cleanup
+
+        if best_cleanup is not None:
+            old_score = best_score
+            gain = best_cleanup["gain"]
+            best_state = dict(best_cleanup["candidate"])
+            best_blocks = best_cleanup["blocks"]
+            best_scored_blocks = best_cleanup["scored_blocks"]
+            best_score = best_cleanup["score"]
+            best_before = best_cleanup["before"]
+            best_drop = best_cleanup["dropped"]
+            best_report = best_cleanup["report"]
+            best_cov = best_cleanup["coverage"]
+            best_fill = best_cleanup["fill"]
+            best_reached = True
+            best_noise_ratio = best_cleanup["noise_ratio"]
+            current_dominant_keys = gain["dominant_keys"]
+            current_noise_keys = gain["noise_keys"]
+            history.append({
+                "round": int(stopped_round or 0) + 1,
+                "stage": "block_cleanup",
+                "changed_param": best_cleanup["param_name"],
+                "temperature": temperature,
+                "score": best_score,
+                "accepted": 1,
+                "is_best": int(best_score > old_score),
+                "coverage": best_cov,
+                "raw_blocks": len(raw_blocks),
+                "blocks_before_partner_prune": len(best_before),
+                "dropped_by_partner_cap": len(best_drop),
+                "blocks": len(best_blocks),
+                "scored_blocks": len(best_scored_blocks),
+                "noise_ratio": best_noise_ratio,
+                "noise_filter_status": best_cleanup["noise_info"].get("status", ""),
+                "dominant_blocks": gain["dominant_block_count"],
+                "non_dominant_blocks": gain["non_dominant_block_count"],
+                "delta_dominant_blocks": 0,
+                "delta_noise_blocks": -best_cleanup["noise_reduction"],
+                "delta_dominant_aln": 0,
+                "delta_noise_aln": 0,
+                "net_gain": best_cleanup["noise_reduction"],
+                "best_blocks": len(best_blocks),
+                "best_scored_blocks": len(best_scored_blocks),
+                "target_reached": int(best_reached),
+                "fill_mode_block_threshold": fill_mode_block_threshold,
+                "score_mode": "block_limit_cleanup",
+                "block_mode": int(block_mode),
+                "block_limit": block_limit,
+                "stopped": 1,
+                "stop_reason": f"{stop_reason};cleanup_noise_reduction={best_cleanup['noise_reduction']}",
+                "rescue_rounds": best_cleanup["rescue_rounds"],
+                "rescue_action": best_cleanup["rescue_action"],
+                "guard_action": best_cleanup["guard_action"],
+                **initial_summary,
+                **best_fill,
+                "delta": best_score - old_score,
+                **best_state,
+            })
+
+    block_capped = False
+    if block_mode and len(best_scored_blocks) > block_limit:
+        block_capped = True
+        before_cap_count = len(best_scored_blocks)
+        best_scored_blocks = sorted(
+            best_scored_blocks,
+            key=lambda block: (
+                int(block.get("alnLen", 0) or 0),
+                float(block.get("identity", 0.0) or 0.0),
+                int(block.get("mapq", 0) or 0),
+            ),
+            reverse=True,
+        )[:block_limit]
+        best_blocks = best_scored_blocks
+        best_score = _score(
+            best_scored_blocks,
+            target_blocks,
+            len(collect_matched_chr_ids(best_scored_blocks)) / max(1, len(baseline_chr)),
+            min_coverage,
+            best_state,
+            fill_metrics=_chr_fill_metrics(best_scored_blocks, baseline_chr, target_chr_fill),
+            target_chr_fill=target_chr_fill,
+            fill_mode_block_threshold=fill_mode_block_threshold,
+            noise_ratio=best_noise_ratio,
+        )
+        history.append({
+            "round": int(stopped_round or 0) + 2,
+            "stage": "block_cap",
+            "changed_param": "",
+            "temperature": temperature,
+            "score": best_score,
+            "accepted": 1,
+            "is_best": 0,
+            "coverage": len(collect_matched_chr_ids(best_scored_blocks)) / max(1, len(baseline_chr)),
+            "raw_blocks": len(raw_blocks),
+            "blocks_before_partner_prune": len(best_before),
+            "dropped_by_partner_cap": len(best_drop),
+            "blocks": len(best_blocks),
+            "scored_blocks": len(best_scored_blocks),
+            "noise_ratio": best_noise_ratio,
+            "noise_filter_status": "",
+            "dominant_blocks": "",
+            "non_dominant_blocks": "",
+            "delta_dominant_blocks": 0,
+            "delta_noise_blocks": 0,
+            "delta_dominant_aln": 0,
+            "delta_noise_aln": 0,
+            "net_gain": before_cap_count - len(best_scored_blocks),
+            "best_blocks": len(best_blocks),
+            "best_scored_blocks": len(best_scored_blocks),
+            "target_reached": int(best_reached),
+            "fill_mode_block_threshold": fill_mode_block_threshold,
+            "score_mode": "block_limit_cap",
+            "block_mode": int(block_mode),
+            "block_limit": block_limit,
+            "stopped": 1,
+            "stop_reason": f"{stop_reason};cap {before_cap_count}->{len(best_scored_blocks)}",
+            "rescue_rounds": 0,
+            "rescue_action": "",
+            "guard_action": "",
+            **initial_summary,
+            **_chr_fill_metrics(best_scored_blocks, baseline_chr, target_chr_fill),
+            "delta": 0,
+            **best_state,
+        })
+
     best_state["max_partners_per_chr"] = max_partners
     best_state["partner_cap_mode"] = partner_cap_mode
     best_state["target_chr_fill"] = target_chr_fill
     best_state["target_reached"] = int(best_reached)
     best_state["fill_mode_block_threshold"] = fill_mode_block_threshold
     best_state["score_mode"] = (
+        "block_limit_cap"
+        if block_capped else
+        "block_limit_cleanup"
+        if block_stop_triggered else
         "noise_aware_rollback_random_single_param"
         if noise_events else
         "noise_aware_self_stopping"
     )
     best_state["noise_ratio"] = best_noise_ratio
     best_state["scored_blocks"] = len(best_scored_blocks)
+    best_state["block_mode"] = int(block_mode)
+    best_state["block_limit"] = block_limit
     best_state["auto_stop_reason"] = stop_reason
     best_state["auto_stopped_round"] = stopped_round
     best_state["dominant_chr_pair_keys"] = dominant_chr_pair_keys

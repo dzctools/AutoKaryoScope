@@ -1,3 +1,3 @@
-"""Modular synteny HTML plotting package split from draw_picture_html_auto_v3.py."""
+"""AutoKaryoScope interactive chromosome-scale synteny visualization package."""
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"

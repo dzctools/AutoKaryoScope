@@ -64,6 +64,53 @@ def write_chr_pair_count_tsv(blocks, path):
             )
 
 
+def write_chromosome_correspondence_tsv(blocks, path):
+    stat = count_chr_pair_blocks(blocks)
+    rows = list(stat.values())
+
+    best_by_upper = {}
+    best_by_lower = {}
+    for row in rows:
+        upper_key = (row["pair"], row["upper"])
+        lower_key = (row["pair"], row["lower"])
+        rank_key = (int(row.get("block_count", 0) or 0), int(row.get("aln_sum", 0) or 0))
+        if upper_key not in best_by_upper or rank_key > best_by_upper[upper_key][0]:
+            best_by_upper[upper_key] = (rank_key, row)
+        if lower_key not in best_by_lower or rank_key > best_by_lower[lower_key][0]:
+            best_by_lower[lower_key] = (rank_key, row)
+
+    fields = [
+        "pair", "upper_genome", "lower_genome",
+        "upper_chr", "best_lower_chr",
+        "block_count", "aln_sum",
+        "reciprocal_best", "lower_best_upper_chr",
+    ]
+    out_rows = []
+    for (_, _), (_, row) in best_by_upper.items():
+        lower_best = best_by_lower.get((row["pair"], row["lower"]), (None, {}))[1]
+        lower_best_upper = lower_best.get("upper", "")
+        out_rows.append({
+            "pair": row["pair"],
+            "upper_genome": row["upperGenome"],
+            "lower_genome": row["lowerGenome"],
+            "upper_chr": row["upper"],
+            "best_lower_chr": row["lower"],
+            "block_count": row["block_count"],
+            "aln_sum": row["aln_sum"],
+            "reciprocal_best": int(lower_best_upper == row["upper"]),
+            "lower_best_upper_chr": lower_best_upper,
+        })
+
+    out_rows = sorted(
+        out_rows,
+        key=lambda x: (int(x["pair"]), natural_key(x["upper_chr"]), natural_key(x["best_lower_chr"]))
+    )
+    with Path(path).open("w") as out:
+        out.write("\t".join(fields) + "\n")
+        for row in out_rows:
+            out.write("\t".join(str(row.get(f, "")) for f in fields) + "\n")
+
+
 def write_dropped_chr_pair_tsv(dropped, path):
     fields = [
         "pair", "upperGenome", "lowerGenome", "upper", "lower",
@@ -248,7 +295,7 @@ def write_auto_tune_report(history, path):
         "init_method", "init_dominant_pairs", "init_representative_blocks",
         "init_min_block", "init_min_identity", "init_min_mapq",
         "init_min_pair_aln", "init_min_pair_blocks",
-        "fill_mode_block_threshold", "score_mode",
+        "fill_mode_block_threshold", "score_mode", "block_mode", "block_limit",
         "chr_fill_target", "chr_fill_min", "chr_fill_mean",
         "chr_fill_pass_fraction", "chr_fill_pass_count", "chr_fill_total_chr",
         "coverage", "score",
@@ -265,12 +312,12 @@ def write_auto_tune_report(history, path):
             out.write("\t".join(row) + "\n")
 
 
-def write_asa_selected_steps_tsv(history, path):
+def write_optimizer_selected_steps_tsv(history, path):
     rows = [x for x in history if int(x.get("accepted", 0) or 0) == 1]
     return write_auto_tune_report(rows, path)
 
 
-def write_asa_trace_pdf(history, path):
+def write_optimizer_trace_pdf(history, path):
     path = Path(path)
     try:
         import matplotlib
@@ -285,7 +332,7 @@ def write_asa_trace_pdf(history, path):
         return False
 
     if not history:
-        path.with_suffix(".plot_error.txt").write_text("No ASA history rows to plot.\n", encoding="utf-8")
+        path.with_suffix(".plot_error.txt").write_text("No optimizer history rows to plot.\n", encoding="utf-8")
         return False
 
     grouped = {}
@@ -312,7 +359,7 @@ def write_asa_trace_pdf(history, path):
                 ax.scatter(accepted_x, accepted_y, color="#d62728", s=14, label="accepted steps")
             if target > 0:
                 ax.axhline(target, color="black", linestyle="--", linewidth=1, label=f"target {int(target)}")
-            ax.set_title(f"ASA optimizer block trace: pair {pair} {pair_label} {preset}")
+            ax.set_title(f"AutoKaryoScope optimizer block trace: pair {pair} {pair_label} {preset}")
             ax.set_xlabel("round")
             ax.set_ylabel("block count")
             ax.grid(True, alpha=0.25)
@@ -333,7 +380,7 @@ def write_asa_trace_pdf(history, path):
             lines, labels = ax.get_legend_handles_labels()
             lines2, labels2 = ax2.get_legend_handles_labels()
             ax.legend(lines + lines2, labels + labels2, loc="best")
-            ax.set_title(f"ASA score/coverage trace: pair {pair} {pair_label} {preset}")
+            ax.set_title(f"AutoKaryoScope score/coverage trace: pair {pair} {pair_label} {preset}")
             pdf.savefig(fig)
             plt.close(fig)
 
@@ -345,7 +392,7 @@ def write_preset_selection_report(preset_results, selected_preset, path):
     fields = [
         "adjacent_pair", "pair_label", "preset", "raw_blocks", "blocks_before_partner_prune",
         "dropped_partner_blocks", "tuned_blocks", "target_blocks", "reached_target",
-        "fill_mode_block_threshold", "score_mode",
+        "fill_mode_block_threshold", "score_mode", "block_mode", "block_limit",
         "chr_fill_target", "chr_fill_min", "chr_fill_mean",
         "chr_fill_pass_fraction", "chr_fill_pass_count", "chr_fill_total_chr",
         "score", "coverage", "min_block", "min_identity", "min_mapq",
@@ -369,6 +416,8 @@ def write_preset_selection_report(preset_results, selected_preset, path):
                 "reached_target": int(x.get("target_reached", len(x.get("blocks", [])) >= target if target > 0 else 0)),
                 "fill_mode_block_threshold": bp.get("fill_mode_block_threshold", ""),
                 "score_mode": bp.get("score_mode", ""),
+                "block_mode": bp.get("block_mode", ""),
+                "block_limit": bp.get("block_limit", ""),
                 "chr_fill_target": bp.get("target_chr_fill", bp.get("chr_fill_target", "")),
                 "chr_fill_min": bp.get("chr_fill_min", ""),
                 "chr_fill_mean": bp.get("chr_fill_mean", ""),

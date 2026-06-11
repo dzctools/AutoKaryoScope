@@ -33,11 +33,12 @@ from .ordering import choose_order, choose_synteny_orders, parse_turn_spec_multi
 from .paf import parse_paf_for_pair, run_minimap2
 from .reports import (
     write_auto_tune_report,
-    write_asa_selected_steps_tsv,
-    write_asa_trace_pdf,
+    write_optimizer_selected_steps_tsv,
+    write_optimizer_trace_pdf,
     write_blocks_tsv,
     write_chr_pair_count_tsv,
     write_chr_pair_dominance_tsv,
+    write_chromosome_correspondence_tsv,
     write_dominant_chr_pair_init_tsv,
     write_dropped_chr_pair_tsv,
     write_final_noise_filter_report,
@@ -373,26 +374,30 @@ def main():
     parser.add_argument("--auto-min-chr-len-ratio", type=float, default=0.01,
                         help="Auto contig length ratio of the longest sequence. Used only when --min-chr-len 0. Default: 0.01.")
     parser.add_argument("--min-block", type=int, default=50_000,
-                        help="Initial ASA minimum alignment block length. Default: 50000.")
+                        help="Initial optimizer minimum alignment block length. Default: 50000.")
     parser.add_argument("--min-mapq", type=int, default=60,
-                        help="Initial ASA minimum mapping quality. Default: 60.")
+                        help="Initial optimizer minimum mapping quality. Default: 60.")
     parser.add_argument("--min-identity", type=float, default=0.90,
-                        help="Initial ASA minimum identity. Default: 0.90.")
+                        help="Initial optimizer minimum identity. Default: 0.90.")
     parser.add_argument("--min-pair-aln", type=int, default=10_000_000,
-                        help="Initial ASA minimum total aligned length per chromosome pair. Default: 10000000.")
+                        help="Initial optimizer minimum total aligned length per chromosome pair. Default: 10000000.")
     parser.add_argument("--min-pair-blocks", type=int, default=0)
     parser.add_argument("--max-bottom-per-top", type=int, default=0)
     parser.add_argument("--max-blocks", type=int, default=0)
+    parser.add_argument("-block", "--block", dest="block", action="store_true", default=False,
+                        help="Small-output mode: stop optimization when scored blocks reach --block-limit, then run a local noise-reduction pass.")
+    parser.add_argument("--block-limit", type=int, default=5000,
+                        help="Block count limit used by -block/--block mode. Default: 5000.")
 
     # Auto-tuning for PAF post-processing
     parser.add_argument("--auto-tune-paf", dest="auto_tune_paf", action="store_true", default=True,
-                        help="Use ASA auto logic with chromosome fill-rate target plus partner-cap pruning. Enabled by default.")
+                        help="Use AutoKaryoScope optimization logic with chromosome fill-rate target plus partner-cap pruning. Enabled by default.")
     parser.add_argument("--no-auto-tune-paf", dest="auto_tune_paf", action="store_false",
                         help="Disable automatic PAF post-filter tuning and use manual filter values.")
     parser.add_argument("--target-blocks", type=int, default=0,
                         help="Legacy total target. In new auto mode, --target-blocks-per-pair is preferred.")
     parser.add_argument("--target-blocks-per-pair", type=int, default=5000,
-                        help="Legacy/reporting block target per adjacent genome pair. ASA target is now --target-chr-fill. Default: 5000.")
+                        help="Legacy/reporting block target per adjacent genome pair. optimizer target is now --target-chr-fill. Default: 5000.")
     parser.add_argument("--target-chr-fill", type=float, default=0.90,
                         help="Auto target: chromosome fill rate needed for a chromosome to be considered drawable. Default: 0.99.")
     parser.add_argument("--auto-rounds", type=int, default=4,
@@ -535,12 +540,13 @@ def main():
     blocks_tsv = outdir / f"{prefix}.filtered_blocks.tsv"
     chr_pair_count_tsv = outdir / f"{prefix}.chr_pair_block_counts.tsv"
     chr_pair_dominance_tsv = outdir / f"{prefix}.chr_pair_dominance.tsv"
+    chromosome_correspondence_tsv = outdir / f"{prefix}.chromosome_correspondence.tsv"
     dropped_chr_pair_tsv = outdir / f"{prefix}.dropped_chr_pairs.tsv"
     final_noise_filter_tsv = outdir / f"{prefix}.final_noise_filter_report.tsv"
     dominant_chr_pair_init_tsv = outdir / f"{prefix}.dominant_chr_pair_init.tsv"
     auto_tune_tsv = outdir / f"{prefix}.auto_tune_report.tsv"
-    asa_selected_steps_tsv = outdir / f"{prefix}.asa_selected_steps.tsv"
-    asa_trace_pdf = outdir / f"{prefix}.asa_trace.pdf"
+    optimizer_selected_steps_tsv = outdir / f"{prefix}.optimizer_selected_steps.tsv"
+    optimizer_trace_pdf = outdir / f"{prefix}.optimizer_trace.pdf"
     partner_pruning_tsv = outdir / f"{prefix}.partner_pruning_report.tsv"
     dropped_partner_blocks_tsv = outdir / f"{prefix}.dropped_partner_blocks.tsv"
     initial_chr_block_counts_tsv = outdir / f"{prefix}.initial_chr_block_counts.tsv"
@@ -735,11 +741,11 @@ def main():
 
     if args.auto_tune_paf:
         write_auto_tune_report(tune_history, auto_tune_tsv)
-        write_asa_selected_steps_tsv(tune_history, asa_selected_steps_tsv)
-        if write_asa_trace_pdf(tune_history, asa_trace_pdf):
-            print(f"[asa trace pdf] {asa_trace_pdf}", file=sys.stderr)
+        write_optimizer_selected_steps_tsv(tune_history, optimizer_selected_steps_tsv)
+        if write_optimizer_trace_pdf(tune_history, optimizer_trace_pdf):
+            print(f"[optimizer trace pdf] {optimizer_trace_pdf}", file=sys.stderr)
         else:
-            print(f"[asa trace pdf] failed; see {asa_trace_pdf.with_suffix('.plot_error.txt')}", file=sys.stderr)
+            print(f"[optimizer trace pdf] failed; see {optimizer_trace_pdf.with_suffix('.plot_error.txt')}", file=sys.stderr)
         print(
             "[auto best] "
             f"mode=pairwise "
@@ -751,7 +757,7 @@ def main():
             file=sys.stderr,
         )
         print(f"[auto report] {auto_tune_tsv}", file=sys.stderr)
-        print(f"[asa selected steps] {asa_selected_steps_tsv}", file=sys.stderr)
+        print(f"[optimizer selected steps] {optimizer_selected_steps_tsv}", file=sys.stderr)
         write_partner_pruning_report(all_partner_pruning_rows, partner_pruning_tsv)
         write_dropped_partner_blocks_tsv(all_dropped_partner_blocks, dropped_partner_blocks_tsv)
         write_chr_block_counts_tsv(all_initial_chr_block_count_rows, initial_chr_block_counts_tsv)
@@ -835,8 +841,10 @@ def main():
 
     write_chr_pair_count_tsv(all_blocks, chr_pair_count_tsv)
     write_chr_pair_dominance_tsv(all_blocks, chr_pair_dominance_tsv)
+    write_chromosome_correspondence_tsv(all_blocks, chromosome_correspondence_tsv)
     print(f"[chr-pair block counts] {chr_pair_count_tsv}", file=sys.stderr)
     print(f"[chr-pair dominance] {chr_pair_dominance_tsv}", file=sys.stderr)
+    print(f"[chromosome correspondence] {chromosome_correspondence_tsv}", file=sys.stderr)
 
     if not all_blocks:
         raise RuntimeError("No blocks passed filters.")
@@ -927,12 +935,13 @@ def main():
     print(f"HTML: {html_file}", file=sys.stderr)
     print(f"Blocks: {blocks_tsv}", file=sys.stderr)
     print(f"Chr-pair counts: {chr_pair_count_tsv}", file=sys.stderr)
+    print(f"Chromosome correspondence: {chromosome_correspondence_tsv}", file=sys.stderr)
     print(f"Selected preset: {selected_preset}", file=sys.stderr)
     print(f"Preset selection report: {preset_selection_tsv}", file=sys.stderr)
     if args.auto_tune_paf:
         print(f"Auto-tune report: {auto_tune_tsv}", file=sys.stderr)
-        print(f"ASA selected steps: {asa_selected_steps_tsv}", file=sys.stderr)
-        print(f"ASA trace PDF: {asa_trace_pdf}", file=sys.stderr)
+        print(f"Optimizer selected steps: {optimizer_selected_steps_tsv}", file=sys.stderr)
+        print(f"Optimizer trace PDF: {optimizer_trace_pdf}", file=sys.stderr)
         print(f"Partner pruning report: {partner_pruning_tsv}", file=sys.stderr)
         print(f"Dropped partner blocks: {dropped_partner_blocks_tsv}", file=sys.stderr)
         print(f"Initial chr block counts: {initial_chr_block_counts_tsv}", file=sys.stderr)
