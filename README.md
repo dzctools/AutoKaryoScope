@@ -260,47 +260,6 @@ pip install -e .
 
 `minimap2` is required only when the software is asked to generate PAF files automatically. If you provide `--paf` or `--pafs`, minimap2 is not required during plotting.
 
-## Input Modes
-
-### Multi-genome mode
-
-```bash
-python draw_picture_html_auto_v6.py \
-  --genomes g1.fa g2.fa g3.fa \
-  --genome-labels G1,G2,G3 \
-  --pafs g1_g2.paf,g2_g3.paf \
-  -o ./out \
-  --prefix multi
-```
-
-### Two-genome mode
-
-```bash
-python draw_picture_html_auto_v6.py \
-  --top-genome g1.fa \
-  --bottom-genome g2.fa \
-  --paf g1_g2.paf \
-  --top-label G1 \
-  --bottom-label G2 \
-  -o ./out \
-  --prefix pairwise
-```
-
-### Automatic minimap2 mode
-
-If `--paf` or `--pafs` is omitted, the software can run minimap2 automatically:
-
-```bash
-python draw_picture_html_auto_v6.py \
-  --genomes g1.fa g2.fa g3.fa \
-  --genome-labels G1,G2,G3 \
-  --preset auto \
-  --threads 32 \
-  -o ./out
-```
-
-`--preset auto` tries `asm5`, `asm10`, and `asm20`.
-
 ## Output Files
 
 The output directory contains files such as:
