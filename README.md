@@ -114,6 +114,7 @@ Online preview:
 
 ### Demo 2: 10 animals
 
+Download pafdata：https://github.com/dzctools/AutoKaryoScope/releases/download/demo-data-v1.0.1/AutoKaryoScope_demo.zip
 Repository path:
 
 ```text
