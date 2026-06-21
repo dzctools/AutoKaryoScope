@@ -104,17 +104,17 @@ Online preview:
 
 [Open demo: seal_hai_lion_walrus.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/dzctools/AutoKaryoScope/blob/main/demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html)
 
-### Demo 2: 10 animals
+### Demo 2: 5 animals
 
 Repository path:
 
 ```text
-demo/10animals/animal_10species_test9_block10000.multi_synteny.html
+demo/5animals/animal_5species_test9_block10000.multi_synteny.html
 ```
 
 Online preview:
 
-[Open demo: animal_10species_test9_block10000.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/dzctools/AutoKaryoScope/blob/main/demo/10animals/animal_10species_test9_block10000.multi_synteny.html)
+[Open demo: animal_5species_test9_block10000.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/dzctools/AutoKaryoScope/blob/main/demo/5animals/animal_5species_test9_block10000.multi_synteny.html)
 
 Large demo resources are distributed separately from the source code so that the software package remains lightweight. Download the complete demo package, including compressed PAF files and generated result reports, from GitHub Releases:
 
@@ -128,7 +128,7 @@ Direct demo package asset:
 https://github.com/dzctools/AutoKaryoScope/releases/download/demo-data-v1.0.1/AutoKaryoScope_demo.zip
 ```
 
-The public assembly accessions used for the 10-animal demonstration are listed below. The order from first to last is also the adjacent PAF order used by `--pafs`.
+The direct demo package provides data for 10 animal genomes. The 5-animal HTML demo included in this repository uses the first five genomes from this dataset as a lightweight example. The order from first to last is also the adjacent PAF order used by `--pafs`.
 
 ```text
 GCA_030062865.2
@@ -141,7 +141,6 @@ GCF_039906515.1
 GCF_937001465.1
 GCF_963924675.1
 GCF_008692025.1
-GCA_005190385.4
 ```
 
 `Neophocaena_sunameri` is our newly assembled T2T genome and has not yet been published, so the genome assembly itself is not included in this repository. The seal, sea lion, and walrus genomes used for the seal/sea-lion/walrus demo are also T2T genomes from our ongoing manuscript and will be released after the manuscript is accepted.
