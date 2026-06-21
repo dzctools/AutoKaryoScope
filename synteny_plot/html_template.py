@@ -367,11 +367,34 @@ function cfgColor(key, fallback) {
   return COLOR_CONFIG[key] || fallback;
 }
 
+function chromosomePalette() {
+  const fromConfig = COLOR_CONFIG.chromosome_color_palette || COLOR_CONFIG.chromosomeColorPalette || COLOR_CONFIG.chromosome_color_presets || COLOR_CONFIG.chromosomeColorPresets || [];
+  const usable = Array.isArray(fromConfig) ? fromConfig.filter(Boolean) : [];
+  return usable.length ? usable : ["#6AA861", "#A7BB89", "#E6826C", "#F0CD9B", "#F5A087", "#A4D3C8", "#7475BD", "#AE002E"];
+}
+
+function normalizeHexColor(color) {
+  if (!color || typeof color !== "string") return null;
+  const value = color.trim();
+  const short = /^#([0-9a-f]{3})$/i.exec(value);
+  if (short) return "#" + short[1].split("").map(ch => ch + ch).join("");
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : null;
+}
+
+function hexToRgba(color, alpha) {
+  const hex = normalizeHexColor(color);
+  if (!hex) return color || cfgColor("link_forward", "rgba(106, 168, 97, 0.34)");
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function cfgSvColors() {
   const base = {
     SYN: "#b0b0b0",
-    INV: "#dc2626",
-    FRAG_INV: "#f97316",
+    INV: "#9ca3af",
+    FRAG_INV: "#9ca3af",
     FUSION: "#dc2626",
     TRANS: "#dc2626",
     INS: "#16a34a",
@@ -620,22 +643,91 @@ function drawText(x, y, text, className, anchor="middle") {
 
 /* ====== Chromosome Color Picker ====== */
 const chrColors = {};  // key: "rowIndex:seq_id" -> color string
+const deletedChrs = new Set();  // key: "rowIndex:seq_id" -> hidden chromosome
+let propagatedChrColors = null;
 let cpTarget = null;   // {rowIndex, seq_id, rect}
 
 function chrColorKey(rowIndex, seqId) { return rowIndex + ":" + seqId; }
+function isChrDeleted(rowIndex, seqId) { return deletedChrs.has(chrColorKey(rowIndex, seqId)); }
+function chrPairKey(pair, upper, lower) { return [pair, upper, lower].join("||"); }
+const DOMINANT_CHR_PAIR_SET = new Set((CONFIG.dominantChrPairKeys || []).map(k => chrPairKey(k[0], k[1], k[2])));
+function isDominantChrPairBlock(block) { return DOMINANT_CHR_PAIR_SET.has(chrPairKey(block.pair, block.upper, block.lower)); }
+
+function computePropagatedChrColors() {
+  const colors = {};
+  const palette = chromosomePalette();
+  if (!GENOMES.length) return colors;
+
+  (GENOMES[0].records || []).forEach((record, idx) => {
+    colors[chrColorKey(0, record.seq_id)] = palette[idx % palette.length];
+  });
+
+  for (let pairIndex = 0; pairIndex < GENOMES.length - 1; pairIndex++) {
+    const upperRow = pairIndex;
+    const lowerRow = pairIndex + 1;
+    const lowerRecords = (GENOMES[lowerRow] && GENOMES[lowerRow].records) || [];
+    const scores = new Map();
+
+    BLOCKS.forEach(block => {
+      if (block.pair !== pairIndex) return;
+      const upper = block.upper;
+      const lower = block.lower;
+      if (!upper || !lower) return;
+      const len = Number(block.alnLen || block.upperEnd - block.upperStart || block.lowerEnd - block.lowerStart || 1) || 1;
+      if (!scores.has(lower)) scores.set(lower, new Map());
+      const byUpper = scores.get(lower);
+      byUpper.set(upper, (byUpper.get(upper) || 0) + len);
+    });
+
+    lowerRecords.forEach((record, idx) => {
+      const lower = record.seq_id;
+      const byUpper = scores.get(lower);
+      let bestUpper = null;
+      let bestScore = -1;
+      if (byUpper) {
+        byUpper.forEach((score, upper) => {
+          if (score > bestScore) {
+            bestScore = score;
+            bestUpper = upper;
+          }
+        });
+      }
+      const inherited = bestUpper ? colors[chrColorKey(upperRow, bestUpper)] : null;
+      colors[chrColorKey(lowerRow, lower)] = inherited || palette[idx % palette.length];
+    });
+  }
+  return colors;
+}
+
+function getPropagatedChrColors() {
+  if (!propagatedChrColors) propagatedChrColors = computePropagatedChrColors();
+  return propagatedChrColors;
+}
+
+function autoChrColor(rowIndex, seqId) {
+  return getPropagatedChrColors()[chrColorKey(rowIndex, seqId)] || chromosomePalette()[0];
+}
+
+function displayChrColor(rowIndex, seqId) {
+  return chrColors[chrColorKey(rowIndex, seqId)] || autoChrColor(rowIndex, seqId);
+}
+
+function linkColorForBlock(block, visual, wide) {
+  const svType = svTypeOfBlock(block);
+  if (visual === "-" || svType === "INV" || svType === "FRAG_INV") {
+    return cfgColor("inversion_link_color", cfgColor(wide ? "link_reverse" : "link_reverse_thin", "rgba(156, 163, 175, 0.62)"));
+  }
+  const base = displayChrColor(block.pair || 0, block.upper);
+  return hexToRgba(base, wide ? 0.30 : 0.58);
+}
 
 function showColorPicker(event, rowIndex, seqId) {
   event.stopPropagation();
   const cp = document.getElementById("colorPicker");
   cpTarget = {rowIndex, seqId};
-  const key = chrColorKey(rowIndex, seqId);
-  const currentColor = chrColors[key] || cfgColor("default_chromosome_color", cfgColor("chromosome", "#1a2847"));
+  const currentColor = displayChrColor(rowIndex, seqId);
 
-  const presets = COLOR_CONFIG.chromosome_color_presets || COLOR_CONFIG.chromosomeColorPresets || [
-    "#1a2847","#152732","#dc2626","#ea580c","#d97706","#ca8a04",
-    "#65a30d","#16a34a","#0d9488","#0891b2","#2563eb","#7c3aed",
-    "#c026d3","#e11d48","#78716c","#334155","#f8fafc","#1e293b",
-  ];
+  const presets = chromosomePalette();
 
   let html = `<div class="cp-title">${seqId}</div>`;
   html += '<div class="cp-presets">';
@@ -649,9 +741,12 @@ function showColorPicker(event, rowIndex, seqId) {
   html += `<input type="text" id="cpInput" value="${currentColor}" placeholder="#dc2626 or 220,38,38" oninput="syncColorFromInput()"/>`;
   html += '</div>';
   html += '<div class="cp-buttons">';
-  html += '<button onclick="resetChrColor()">Reset</button>';
+  html += '<button onclick="resetChrColor()">Reset color</button>';
   html += '<button onclick="hideColorPicker()">Cancel</button>';
   html += '<button class="cp-apply" onclick="applyChrColor()">Apply</button>';
+  html += '</div>';
+  html += '<div class="cp-buttons">';
+  html += '<button onclick="deleteChrFromView()">Delete chromosome</button>';
   html += '</div>';
 
   cp.innerHTML = html;
@@ -720,6 +815,13 @@ function resetChrColor() {
   hideColorPicker();
 }
 
+function deleteChrFromView() {
+  if (!cpTarget) return;
+  deletedChrs.add(chrColorKey(cpTarget.rowIndex, cpTarget.seqId));
+  draw();
+  hideColorPicker();
+}
+
 // Close picker on outside click
 document.addEventListener("click", function(e) {
   const cp = document.getElementById("colorPicker");
@@ -733,15 +835,14 @@ function drawChromosomes(records, layout, y, rowIndex) {
   for (const r of records) {
     const item = layout[r.seq_id];
 
-    const key = chrColorKey(rowIndex, r.seq_id);
-    const customColor = chrColors[key] || null;
+    const rectColor = displayChrColor(rowIndex, r.seq_id);
     const rectAttrs = {
       x: item.x0,
       y: y - barH / 2,
       width: Math.max(1, item.x1 - item.x0),
       height: barH,
       class: "chr",
-      style: customColor ? ("fill:" + customColor) : ""
+      style: "fill:" + rectColor
     };
     const rect = makeSvgEl("rect", rectAttrs);
 
@@ -836,19 +937,42 @@ function drawScaleBar(item, chrLen, baseY) {
 function drawLinks(layouts, blocks, rowYByOriginal) {
   const visibleBlocks = blocks.filter(b => visibleSvTypes.has(svTypeOfBlock(b)));
   const wideThreshold = Number(CONFIG.wideRibbonThreshold || 300);
-  const pairCounts = new Map();
+  const chrPairCounts = new Map();
   for (const b of visibleBlocks) {
-    pairCounts.set(b.pair, (pairCounts.get(b.pair) || 0) + 1);
+    const key = chrPairKey(b.pair, b.upper, b.lower);
+    chrPairCounts.set(key, (chrPairCounts.get(key) || 0) + 1);
+  }
+  const dominantRibbonByUpper = new Map();
+  const dominantRibbonByLower = new Map();
+  for (const b of visibleBlocks) {
+    if (!isDominantChrPairBlock(b)) continue;
+    const count = chrPairCounts.get(chrPairKey(b.pair, b.upper, b.lower)) || 0;
+    const isRibbon = count < wideThreshold;
+    dominantRibbonByUpper.set(chrPairKey(b.pair, b.upper, ""), isRibbon);
+    dominantRibbonByLower.set(chrPairKey(b.pair, "", b.lower), isRibbon);
+  }
+  function blockUsesWideRibbon(block) {
+    const count = chrPairCounts.get(chrPairKey(block.pair, block.upper, block.lower)) || 0;
+    if (isDominantChrPairBlock(block)) return count < wideThreshold;
+    const upperKey = chrPairKey(block.pair, block.upper, "");
+    if (dominantRibbonByUpper.has(upperKey)) {
+      return dominantRibbonByUpper.get(upperKey) && count < wideThreshold;
+    }
+    const lowerKey = chrPairKey(block.pair, "", block.lower);
+    if (dominantRibbonByLower.has(lowerKey)) {
+      return dominantRibbonByLower.get(lowerKey) && count < wideThreshold;
+    }
+    return false;
   }
   const sorted = visibleBlocks.slice().sort((a, b) => {
-    const aw = (pairCounts.get(a.pair) || 0) < wideThreshold;
-    const bw = (pairCounts.get(b.pair) || 0) < wideThreshold;
+    const aw = blockUsesWideRibbon(a);
+    const bw = blockUsesWideRibbon(b);
     if (aw !== bw) return aw ? -1 : 1;
     return aw ? a.alnLen - b.alnLen : b.alnLen - a.alnLen;
   });
 
   for (const b of sorted) {
-    const useWideRibbon = (pairCounts.get(b.pair) || 0) < wideThreshold;
+    const useWideRibbon = blockUsesWideRibbon(b);
     const upperRow = b.pair;
     const lowerRow = b.pair + 1;
 
@@ -877,7 +1001,13 @@ function drawLinks(layouts, blocks, rowYByOriginal) {
     let upperFillText = "";
     let lowerFillText = "";
     const svType = svTypeOfBlock(b);
-    const svStyle = svColorMode ? {"style": `--sv-color: ${svColor(svType)}`} : {};
+    const autoLinkColor = linkColorForBlock(b, visual, useWideRibbon);
+    const ribbonStyle = svColorMode
+      ? {"style": `--sv-color: ${svColor(svType)}`}
+      : {"style": `fill:${autoLinkColor};stroke:${autoLinkColor}`};
+    const thinStyle = svColorMode
+      ? {"style": `--sv-color: ${svColor(svType)};fill:none`}
+      : {"style": `fill:none;stroke:${autoLinkColor}`};
 
     if (useWideRibbon) {
       const upperInterval = blockIntervalX(upperLayout, b.upper, b.upperStart, b.upperEnd, b.alnLen);
@@ -889,7 +1019,7 @@ function drawLinks(layouts, blocks, rowYByOriginal) {
         d: ribbonPath(upperInterval.left, upperInterval.right, y1, lowerA, lowerB, y2, visual === "-"),
         class: (visual === "+" ? "link forward" : "link reverse") + (svColorMode ? " svColor" : ""),
         "opacity": CONFIG.linkOpacity,
-        ...svStyle
+        ...ribbonStyle
       };
       upperFillText = `upper fill: ${(upperInterval.frac * 100).toFixed(2)}%<br>`;
       lowerFillText = `lower fill: ${(lowerInterval.frac * 100).toFixed(2)}%<br>`;
@@ -902,7 +1032,7 @@ function drawLinks(layouts, blocks, rowYByOriginal) {
         "stroke-width": strokeWidth(b.alnLen),
         "stroke-linecap": "round",
         "opacity": CONFIG.linkOpacity,
-        ...svStyle
+        ...thinStyle
       };
     }
 
@@ -1010,10 +1140,20 @@ function resolveFocusRow(requested, chrList) {
 
 function getCurrentData() {
   if (!focus || focus.length === 0) {
+    const genomes = GENOMES.map((g, i) => ({
+      label: g.label,
+      records: g.records.filter(r => !isChrDeleted(i, r.seq_id)),
+      rowIndex: i
+    })).filter(g => g.records.length > 0);
+    const blocks = BLOCKS.filter(b =>
+      !isChrDeleted(b.pair, b.upper) &&
+      !isChrDeleted(b.pair + 1, b.lower)
+    );
+    const hiddenCount = deletedChrs.size;
     return {
-      genomes: GENOMES.map((g, i) => ({label: g.label, records: g.records, rowIndex: i})),
-      blocks: BLOCKS,
-      note: ""
+      genomes,
+      blocks,
+      note: hiddenCount ? `Hidden ${hiddenCount} chromosome(s), ${blocks.length} block(s)` : ""
     };
   }
 
@@ -1052,10 +1192,12 @@ function getCurrentData() {
   const genomes = [];
   for (let i = 0; i < n; i++) {
     if (active[i].size === 0) continue;
-    const names = Array.from(active[i]);
+    const names = Array.from(active[i]).filter(chr => !isChrDeleted(i, chr));
+    const records = orderRecordsByNames(GENOMES[i].records, names);
+    if (records.length === 0) continue;
     genomes.push({
       label: GENOMES[i].label,
-      records: orderRecordsByNames(GENOMES[i].records, names),
+      records,
       rowIndex: i
     });
   }
@@ -1066,7 +1208,9 @@ function getCurrentData() {
     return active[upperRow] &&
       active[lowerRow] &&
       active[upperRow].has(b.upper) &&
-      active[lowerRow].has(b.lower);
+      active[lowerRow].has(b.lower) &&
+      !isChrDeleted(upperRow, b.upper) &&
+      !isChrDeleted(lowerRow, b.lower);
   });
 
   const focusText = focus
@@ -1340,6 +1484,7 @@ function focusChromosome() {
 
 function resetFocus() {
   focus = [];
+  deletedChrs.clear();
   document.getElementById("focusChr").value = "";
   document.getElementById("focusRow").value = "auto";
   draw();

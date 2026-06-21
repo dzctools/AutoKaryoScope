@@ -942,6 +942,7 @@ def main():
         wide_ribbon_threshold=args.wide_ribbon_threshold,
         sv_events=sv_events,
         colors=args.color_config,
+        dominant_chr_pair_keys=all_dominant_chr_pair_keys,
     )
 
     html_file.write_text(html, encoding="utf-8")

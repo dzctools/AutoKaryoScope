@@ -32,24 +32,16 @@ pip install -e .
 
 Unless necessary, please use the default parameters whenever possible. AutoKaryoScope uses one unified input style for both two-genome and multi-genome analyses: provide two or more files with `--genomes`, and provide adjacent PAF files with `--pafs`.
 
-Run a two-genome example without an existing PAF. AutoKaryoScope will run minimap2 automatically:
+Run a two-genome example from an existing PAF:
 
 ```bash
 python AutoKaryoScope.py \
   --genomes genomeA.fa genomeB.fa \
   --genome-labels Genome_A,Genome_B \
-  --preset asm5 \
+  --pafs A_vs_B.paf \
   -o ./autokaryoscope_out \
   --prefix A_vs_B
 ```
-
-The generated PAF is written under the output directory. Its name is generated from `--prefix`, the adjacent pair index, genome labels, and minimap2 preset:
-
-```text
-autokaryoscope_out/A_vs_B.pair0_Genome_A_vs_Genome_B.asm5.paf
-```
-
-At present, there is no separate command-line option for an arbitrary output PAF file name. To control the generated PAF name, set `--prefix`, `--genome-labels`, and `--preset`.
 
 Run a multi-genome example:
 
@@ -113,8 +105,6 @@ Online preview:
 [Open demo: seal_hai_lion_walrus.multi_synteny.html](https://htmlpreview.github.io/?https://github.com/dzctools/AutoKaryoScope/blob/main/demo/seal_hailion_waruls/seal_hai_lion_walrus.multi_synteny.html)
 
 ### Demo 2: 10 animals
-
-Download pafdata：https://github.com/dzctools/AutoKaryoScope/releases/download/demo-data-v1.0.1/AutoKaryoScope_demo.zip
 
 Repository path:
 

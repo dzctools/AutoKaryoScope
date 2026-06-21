@@ -19,7 +19,8 @@ def build_html(genomes, blocks, init_turns,
                max_line_width,
                wide_ribbon_threshold=300,
                sv_events=None,
-               colors=None):
+               colors=None,
+               dominant_chr_pair_keys=None):
     all_chr = sorted({r["seq_id"] for g in genomes for r in g["records"]}, key=natural_key)
     datalist = "\n".join(f'<option value="{x}"></option>' for x in all_chr)
 
@@ -42,6 +43,7 @@ def build_html(genomes, blocks, init_turns,
         "minLineWidth": min_line_width,
         "maxLineWidth": max_line_width,
         "wideRibbonThreshold": int(wide_ribbon_threshold),
+        "dominantChrPairKeys": [list(x) for x in (dominant_chr_pair_keys or [])],
         "colors": colors or {},
     }
 
